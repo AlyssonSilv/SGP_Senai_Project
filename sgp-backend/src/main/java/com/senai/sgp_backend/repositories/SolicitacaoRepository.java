@@ -9,10 +9,11 @@ import java.util.Optional;
 
 @Repository
 public interface SolicitacaoRepository extends JpaRepository<Solicitacao, Long> {
-
-    // Busca todas as solicitações que pertencem a um ID de empresa específico
+    
+    // Busca todas as solicitações de uma empresa específica
     List<Solicitacao> findByEmpresaId(Long empresaId);
 
-    // Busca uma solicitação pelo número do protocolo (Ex: CTE-20260407001)
+    // 👇 A LINHA QUE ESTAVA FALTANDO 👇
+    // Busca uma solicitação específica pelo seu número de protocolo
     Optional<Solicitacao> findByProtocolo(String protocolo);
 }
