@@ -8,6 +8,7 @@ public record SolicitacaoResponseDTO(
     String protocolo,
     String treinamento,
     Integer quantidadeParticipantes,
+    String listaParticipantes, // ADICIONADO: Necessário para o modal de nomes
     LocalDate dataSugerida,
     String status,
     String nomeEmpresa
@@ -18,9 +19,10 @@ public record SolicitacaoResponseDTO(
             s.getProtocolo(),
             s.getTreinamento(),
             s.getQuantidadeParticipantes(),
+            s.getListaParticipantes(), // REFATORADO: Agora envia os nomes para o Front
             s.getDataSugerida(),
             s.getStatus(),
-            s.getEmpresa().getRazaoSocial() // Defesa: Pegando apenas o nome da empresa
+            s.getEmpresa() != null ? s.getEmpresa().getRazaoSocial() : "Empresa não identificada"
         );
     }
 }

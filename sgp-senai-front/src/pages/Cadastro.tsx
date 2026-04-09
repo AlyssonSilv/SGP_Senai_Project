@@ -14,15 +14,14 @@ const Cadastro: React.FC = () => {
     telefone: ''
   });
 
-  // Função para aplicar máscara visual de CNPJ (00.000.000/0000-00)
   const aplicarMascaraCNPJ = (value: string) => {
     return value
-      .replace(/\D/g, '') // Remove tudo que não é dígito
+      .replace(/\D/g, '')
       .replace(/^(\d{2})(\d)/, '$1.$2')
       .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
       .replace(/\.(\d{3})(\d{3})(\d)/, '.$1.$2/$3')
       .replace(/(\d{4})(\d)/, '$1-$2')
-      .substring(0, 18); // Limita ao tamanho do CNPJ formatado
+      .substring(0, 18);
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -32,16 +31,16 @@ const Cadastro: React.FC = () => {
       const payload = {
         razaoSocial: formData.nomeEmpresa,
         nomeResponsavel: formData.nomeResponsavel,
-        // 👇 O segredo: enviamos para o banco apenas os números (limpos)
         cnpj: formData.cnpj.replace(/\D/g, ''), 
         email: formData.email,
         senha: formData.senha,
         telefone: formData.telefone
       };
 
-      await api.post('/api/empresas', payload);
+      // CORREÇÃO: Removido o '/api' redundante, pois já está na baseURL do services/api.ts
+      await api.post('/empresas', payload);
       
-      alert('Cadastro realizado com sucesso! O CNPJ foi salvo apenas com números.');
+      alert('Cadastro realizado com sucesso!');
       navigate('/login');
 
     } catch (error: any) {
@@ -66,7 +65,6 @@ const Cadastro: React.FC = () => {
         </div>
         
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-          
           <div>
             <label htmlFor="nomeEmpresa" className="label">Razão Social</label>
             <input 
@@ -100,7 +98,6 @@ const Cadastro: React.FC = () => {
                 placeholder="00.000.000/0000-00" 
                 required 
                 value={formData.cnpj} 
-                // 👇 Aplica a máscara enquanto o usuário digita
                 onChange={e => setFormData({...formData, cnpj: aplicarMascaraCNPJ(e.target.value)})} 
               />
             </div>

@@ -13,7 +13,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-
 @Component
 public class SecurityFilter extends OncePerRequestFilter {
 
@@ -23,21 +22,19 @@ public class SecurityFilter extends OncePerRequestFilter {
     @Autowired
     private EmpresaRepository empresaRepository;
 
-    // Rastreamento de requisições: Log de depuração para monitorar o fluxo de autenticação
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         var token = this.recoverToken(request);
 
-        
-        if (!request.getRequestURI().startsWith("/login") && !request.getRequestURI().startsWith("/api/empresas")) {
+        // Refatorado: Verificação atualizada para os novos caminhos
+        if (!request.getRequestURI().startsWith("/api/login") && !request.getRequestURI().startsWith("/api/empresas")) {
             // Log de depuração apenas para rotas protegidas
         }
 
         if (token != null) {
             var cnpj = jwtService.validarToken(token);
             if (cnpj != null && !cnpj.isEmpty()) {
-                // Garantir que a busca no filtro também use o CNPJ limpo se necessário
                 UserDetails empresa = empresaRepository.findByCnpj(cnpj)
                         .orElseThrow(() -> new RuntimeException("Token válido, mas empresa não encontrada no banco."));
 

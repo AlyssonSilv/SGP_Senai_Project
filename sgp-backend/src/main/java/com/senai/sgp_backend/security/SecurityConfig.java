@@ -29,27 +29,18 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
-                // 1. Configura o CORS usando o método definido abaixo
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                // 2. Desabilita CSRF (comum em APIs Stateless com JWT)
                 .csrf(csrf -> csrf.disable())
-                // 3. Define a política de sessão como Stateless (sem estado no servidor)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                        // Libera requisições de teste (Preflight) do navegador
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // Rota de Login: Acesso Público
-                        .requestMatchers(HttpMethod.POST, "/login").permitAll()
+                        // Refatorado: Rota de Login agora com prefixo /api
+                        .requestMatchers(HttpMethod.POST, "/api/login").permitAll()
 
-                        // Rota de Cadastro de Empresas: Acesso Público (casando com seu @RequestMapping("/api/empresas"))
                         .requestMatchers(HttpMethod.POST, "/api/empresas").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/empresas/**").permitAll()
-
-                        // Qualquer outra rota do sistema exige que o usuário esteja autenticado com o Token
-                        .anyRequest().authenticated()
-                )
-                // 4. Adiciona nosso filtro de segurança personalizado antes do filtro padrão do Spring
+                        .anyRequest().authenticated())
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }

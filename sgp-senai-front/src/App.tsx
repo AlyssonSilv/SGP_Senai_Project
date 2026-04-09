@@ -7,7 +7,7 @@ import Cadastro from './pages/Cadastro';
 import Dashboard from './pages/Dashboard';
 import NovaSolicitacao from './pages/NovaSolicitacao';
 import ListaSolicitacoes from './pages/ListaSolicitacoes';
-import DetalheSolicitacao from './pages/DetalheSolicitacao'; // <-- Importação Nova
+import DetalheSolicitacao from './pages/DetalheSolicitacao';
 import Usuarios from './pages/Usuarios';
 import ProtectedRoute from './components/ProtectedRoute';
 
