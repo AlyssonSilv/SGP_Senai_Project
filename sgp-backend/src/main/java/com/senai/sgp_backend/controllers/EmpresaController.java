@@ -1,17 +1,19 @@
 package com.senai.sgp_backend.controllers;
 
+import com.senai.sgp_backend.dto.EmpresaResponseDTO;
 import com.senai.sgp_backend.models.Empresa;
 import com.senai.sgp_backend.repositories.EmpresaRepository;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/empresas")
-@CrossOrigin(origins = "http://localhost:5173")
 public class EmpresaController {
 
     @Autowired
@@ -20,41 +22,23 @@ public class EmpresaController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    // 1. Cadastrar uma nova empresa (POST)
     @PostMapping
-    public Empresa cadastrar(@RequestBody Empresa empresa) {
-        // Criptografando a senha antes de salvar no banco
-        String senhaCriptografada = passwordEncoder.encode(empresa.getSenha());
-        empresa.setSenha(senhaCriptografada);
-
-        // CNPJ Limpo antes de salvar
-        String cnpjLimpo = empresa.getCnpj().replaceAll("[^0-9]", "");
-        empresa.setCnpj(cnpjLimpo);
-
-        // Salva e retorna o objeto Empresa
-        return empresaRepository.save(empresa);
+    public ResponseEntity<EmpresaResponseDTO> cadastrar(@RequestBody @Valid Empresa empresa) {
+        // Limpeza defensiva do CNPJ
+        empresa.setCnpj(empresa.getCnpj().replaceAll("[^0-9]", ""));
+        
+        empresa.setSenha(passwordEncoder.encode(empresa.getSenha()));
+        Empresa salva = empresaRepository.save(empresa);
+        
+        return ResponseEntity.ok(EmpresaResponseDTO.fromEntity(salva));
     }
 
-    // 2. Listar todas as empresas (GET)
     @GetMapping
-    public List<Empresa> listarTodas() {
-        return empresaRepository.findAll();
+    public List<EmpresaResponseDTO> listarTodas() {
+        return empresaRepository.findAll()
+                .stream()
+                .map(EmpresaResponseDTO::fromEntity)
+                .collect(Collectors.toList());
     }
 
-    // 3. Buscar empresa por CNPJ (AJUSTADO PARA USERDETAILS)
-    @GetMapping("/cnpj/{cnpj}")
-    public ResponseEntity<Empresa> buscarPorCnpj(@PathVariable String cnpj) {
-        return empresaRepository.findByCnpj(cnpj)
-                .map(userDetails -> ResponseEntity.ok().body((Empresa) userDetails)) // Faz o cast de UserDetails para Empresa
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    // 4. Buscar por ID (GET)
-    @GetMapping("/{id}")
-    public ResponseEntity<Empresa> buscarPorId(@PathVariable Long id) {
-        // O findById continua retornando Optional<Empresa>, então não precisa de cast
-        return empresaRepository.findById(id)
-                .map(record -> ResponseEntity.ok().body(record))
-                .orElse(ResponseEntity.notFound().build());
-    }
 }

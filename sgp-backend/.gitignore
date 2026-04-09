@@ -31,3 +31,18 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# --- SEGURANÇA E AMBIENTE LOCAL ---
+# Ignora especificamente o arquivo com as senhas
+**/src/main/resources/application-local.properties
+
+# Ignora pastas de configuração das IDEs
+.idea/
+# Ignora arquivos de compilação
+bin/
+out/
+
+# Ignora dependências do Frontend
+node_modules/
+dist/
+.env.local

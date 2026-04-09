@@ -22,3 +22,25 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
+
+### IDE específicos ###
+.idea/
+.vscode/
+*.iml
+
+### Arquivos de compilação ###
+target/
+out/
+build/
+.gradle/
+
+### Dados sensíveis e Ambiente ###
+.env
+.env.local
+application.properties.local
+# Caso você use um arquivo para variáveis locais, ignore-o aqui
+
+### Logs e Arquivos do Sistema ###
+*.log
+.DS_Store
+Thumbs.db
