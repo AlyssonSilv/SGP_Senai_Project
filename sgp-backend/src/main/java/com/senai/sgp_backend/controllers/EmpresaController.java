@@ -27,6 +27,10 @@ public class EmpresaController {
         String senhaCriptografada = passwordEncoder.encode(empresa.getSenha());
         empresa.setSenha(senhaCriptografada);
 
+        // CNPJ Limpo antes de salvar
+        String cnpjLimpo = empresa.getCnpj().replaceAll("[^0-9]", "");
+        empresa.setCnpj(cnpjLimpo);
+
         // Salva e retorna o objeto Empresa
         return empresaRepository.save(empresa);
     }

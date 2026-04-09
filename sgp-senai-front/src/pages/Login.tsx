@@ -14,40 +14,40 @@ const Login: React.FC = () => {
     setErro('');
     setLoading(true);
 
-    try {
-      // 1. Dispara a requisição para a rota de autenticação
-      const response = await api.post('/login', { cnpj, senha });
+    // MELHORIA: Limpar o CNPJ antes de enviar para a API (apenas números)
+    const cnpjLimpo = cnpj.replace(/\D/g, '');
 
-      // 2. Extrai os dados validados do DTO que o Spring Boot retornou
+    try {
+      const response = await api.post('/login', { cnpj: cnpjLimpo, senha });
       const { token, id, razaoSocial, email } = response.data;
 
-      // 3. Salva o Token isoladamente (para o Interceptor do api.ts usar no Header)
       localStorage.setItem('token', token);
-
-      // 4. Salva as informações da empresa (sem a senha) para exibição na Sidebar/TopBar
+      // Salva o CNPJ limpo também no storage para consistência
       localStorage.setItem('empresa_logada', JSON.stringify({
         id,
         razaoSocial,
-        cnpj,
+        cnpj: cnpjLimpo,
         email
       }));
 
-      // 5. Redireciona para o sistema
       navigate('/dashboard');
-
-    } catch (error) {
-      console.error("Erro no login:", error);
-      setErro("CNPJ ou senha inválidos. Verifique as credenciais e tente novamente.");
+    } catch (error: any) {
+      // MELHORIA: Tratamento de erro mais específico
+      if (error.response && error.response.status === 401) {
+        setErro("CNPJ ou senha incorretos.");
+      } else {
+        setErro("Erro ao conectar com o servidor. Tente novamente mais tarde.");
+      }
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={{ 
-      display: 'flex', 
-      justifyContent: 'center', 
-      alignItems: 'center', 
+    <div style={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
       minHeight: '100vh',
       backgroundColor: 'var(--bg-color, #121212)' // Fallback para tema escuro
     }}>
@@ -61,11 +61,11 @@ const Login: React.FC = () => {
 
         {/* Mensagem de Erro Condicional */}
         {erro && (
-          <div style={{ 
-            backgroundColor: 'rgba(255, 68, 68, 0.1)', 
-            color: '#ff4444', 
-            padding: '10px', 
-            borderRadius: '6px', 
+          <div style={{
+            backgroundColor: 'rgba(255, 68, 68, 0.1)',
+            color: '#ff4444',
+            padding: '10px',
+            borderRadius: '6px',
             marginBottom: '16px',
             border: '1px solid rgba(255, 68, 68, 0.3)',
             fontSize: '14px'
@@ -105,9 +105,9 @@ const Login: React.FC = () => {
             />
           </div>
 
-          <button 
-            type="submit" 
-            className="btn primary" 
+          <button
+            type="submit"
+            className="btn primary"
             style={{ width: '100%', padding: '12px' }}
             disabled={loading}
           >
