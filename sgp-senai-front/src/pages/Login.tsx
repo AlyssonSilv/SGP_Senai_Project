@@ -17,15 +17,11 @@ const Login: React.FC = () => {
     const cnpjLimpo = cnpj.replace(/\D/g, '');
 
     try {
-      // Chamada para a API que agora retorna token e refreshToken
       const response = await api.post('/login', { cnpj: cnpjLimpo, senha });
-      
-      // REFATORADO: Extraindo o refreshToken do corpo da resposta
       const { token, refreshToken, id, razaoSocial, email } = response.data;
 
-      // Armazenamento para persistência e uso pelos interceptors
       localStorage.setItem('token', token);
-      localStorage.setItem('refreshToken', refreshToken); //Salva o token de renovação
+      localStorage.setItem('refreshToken', refreshToken);
       
       localStorage.setItem('empresa_logada', JSON.stringify({
         id,
@@ -38,15 +34,17 @@ const Login: React.FC = () => {
     } catch (error: any) {
       console.error("Erro no login:", error);
 
-      // REFATORADO: Tratamento de erros baseado nos status que configuramos no backend
+      // CORREÇÃO: Tratamento de erros aprimorado
       if (error.response) {
-        if (error.response.status === 401) {
+        const status = error.response.status;
+        if (status === 401) {
           setErro("CNPJ ou senha incorretos.");
-        } else if (error.response.status === 429) {
-          // Captura a mensagem do RateLimitingFilter (bloqueio por excesso de tentativas)
+        } else if (status === 429) {
           setErro(error.response.data || "Muitas tentativas seguidas. Aguarde um momento.");
+        } else if (status === 500) {
+          setErro("O servidor falhou ao processar o acesso. Verifique os logs do backend.");
         } else {
-          setErro("Ocorreu um erro inesperado no servidor.");
+          setErro("Ocorreu um erro inesperado (Status: " + status + ").");
         }
       } else {
         setErro("Não foi possível conectar ao servidor. Verifique sua internet.");

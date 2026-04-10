@@ -15,15 +15,17 @@ public class RefreshTokenService {
     @Autowired
     private RefreshTokenRepository refreshTokenRepository;
 
-    @Transactional //Necessário para a operação de delete funcionar
+    @Transactional
     public RefreshToken criarRefreshToken(Empresa empresa) {
-        // Remove tokens antigos da mesma empresa antes de criar um novo
-        refreshTokenRepository.deleteByEmpresa(empresa);
+        refreshTokenRepository.findByEmpresa(empresa).ifPresent(token -> {
+            refreshTokenRepository.delete(token);
+            refreshTokenRepository.flush(); // FORÇA a deleção no banco de dados AGORA
+        });
 
         RefreshToken refreshToken = RefreshToken.builder()
                 .empresa(empresa)
                 .token(UUID.randomUUID().toString())
-                .dataExpiracao(Instant.now().plusSeconds(604800)) // 7 dias de validade
+                .dataExpiracao(Instant.now().plusSeconds(604800)) // 7 dias
                 .build();
 
         return refreshTokenRepository.save(refreshToken);
@@ -33,6 +35,7 @@ public class RefreshTokenService {
     public RefreshToken validarExpiracao(RefreshToken token) {
         if (token.getDataExpiracao().isBefore(Instant.now())) {
             refreshTokenRepository.delete(token);
+            refreshTokenRepository.flush(); // Garante que o token expirado suma do banco
             throw new RuntimeException("Refresh token expirado. Faça login novamente.");
         }
         return token;
