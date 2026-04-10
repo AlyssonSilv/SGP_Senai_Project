@@ -14,23 +14,17 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     const carregarDashboard = async () => {
       try {
-        // 1. Recuperar dados da empresa logada
+        // 1. Recuperar dados da empresa logada do localStorage
         const dados = localStorage.getItem('empresa_logada');
         if (!dados) return;
         const empresa = JSON.parse(dados);
         setNomeEmpresa(empresa.razaoSocial);
 
-        // 2. Buscar solicitações reais para calcular os indicadores
-        const response = await api.get(`/solicitacoes/empresa/${empresa.id}`);
-        const lista = response.data;
-
-        // 3. Lógica para contar os status
-        setStats({
-          total: lista.length,
-          novas: lista.filter((s: any) => s.status === 'Nova').length,
-          pendentes: lista.filter((s: any) => s.status === 'Pendente').length,
-          agendadas: lista.filter((s: any) => s.status === 'Agendada').length
-        });
+        // 2. MELHORIA: Consumo Otimizado
+        // Em vez de buscar a lista completa e filtrar no frontend,
+        // utilizamos o novo endpoint de estatísticas que já traz os números prontos.
+        const response = await api.get(`/solicitacoes/stats/empresa/${empresa.id}`);
+        setStats(response.data);
 
       } catch (error) {
         console.error("Erro ao carregar dados do Dashboard:", error);
@@ -49,7 +43,7 @@ const Dashboard: React.FC = () => {
         <div className="p">Você está acessando o painel de controle da sua unidade.</div>
       </section>
 
-      {/* Indicadores (KPIs) com Dados Reais */}
+      {/* Indicadores (KPIs) com Dados Reais vindo do Backend */}
       <section className="card pad" style={{ gridColumn: 'span 3' }}>
         <div className="kpi">
           <div className="dot" style={{ background: 'var(--primary)' }}></div>
@@ -87,7 +81,7 @@ const Dashboard: React.FC = () => {
         </div>
       </section>
 
-      {/* Avisos */}
+      {/* Avisos Informativos */}
       <section className="card pad" style={{ gridColumn: 'span 5' }}>
         <div className="h2">Avisos</div>
         <div className="p" style={{ marginTop: '10px', lineHeight: '1.6' }}>

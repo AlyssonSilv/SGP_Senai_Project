@@ -31,7 +31,6 @@ public class SecurityFilter extends OncePerRequestFilter {
         if (token != null) {
             var cnpj = jwtService.validarToken(token);
             if (cnpj != null && !cnpj.isEmpty()) {
-                // CORREÇÃO: Usando ifPresent para evitar quebras com RuntimeException
                 empresaRepository.findByCnpj(cnpj).ifPresent(empresa -> {
                     var authentication = new UsernamePasswordAuthenticationToken(empresa, null, empresa.getAuthorities());
                     SecurityContextHolder.getContext().setAuthentication(authentication);

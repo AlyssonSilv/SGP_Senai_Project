@@ -19,7 +19,7 @@ public class RefreshTokenService {
     public RefreshToken criarRefreshToken(Empresa empresa) {
         refreshTokenRepository.findByEmpresa(empresa).ifPresent(token -> {
             refreshTokenRepository.delete(token);
-            refreshTokenRepository.flush(); // FORÇA a deleção no banco de dados AGORA
+            refreshTokenRepository.flush();
         });
 
         RefreshToken refreshToken = RefreshToken.builder()

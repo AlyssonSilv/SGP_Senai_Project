@@ -32,4 +32,9 @@ public class SolicitacaoController {
     public ResponseEntity<List<SolicitacaoResponseDTO>> listarPorEmpresa(@PathVariable Long empresaId) {
         return ResponseEntity.ok(solicitacaoService.listarPorEmpresa(empresaId));
     }
+
+    @GetMapping("/stats/empresa/{empresaId}")
+    public ResponseEntity<java.util.Map<String, Long>> obterEstatisticas(@PathVariable Long empresaId) {
+        return ResponseEntity.ok(solicitacaoService.getEstatisticas(empresaId));
+    }
 }

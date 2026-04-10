@@ -29,7 +29,7 @@ public class SolicitacaoService {
             int totalReal = (int) Arrays.stream(solicitacao.getListaParticipantes().split("\\R"))
                     .filter(nome -> !nome.trim().isEmpty())
                     .count();
-            
+
             // Define a quantidade exata baseada nos nomes encontrados
             solicitacao.setQuantidadeParticipantes(totalReal);
         }
@@ -52,5 +52,15 @@ public class SolicitacaoService {
                 .stream()
                 .map(SolicitacaoResponseDTO::fromEntity)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public java.util.Map<String, Long> getEstatisticas(Long empresaId) {
+        java.util.Map<String, Long> stats = new java.util.HashMap<>();
+        stats.put("total", solicitacaoRepository.countByEmpresaId(empresaId));
+        stats.put("novas", solicitacaoRepository.countByEmpresaIdAndStatus(empresaId, "Nova"));
+        stats.put("pendentes", solicitacaoRepository.countByEmpresaIdAndStatus(empresaId, "Pendente"));
+        stats.put("agendadas", solicitacaoRepository.countByEmpresaIdAndStatus(empresaId, "Agendada"));
+        return stats;
     }
 }
