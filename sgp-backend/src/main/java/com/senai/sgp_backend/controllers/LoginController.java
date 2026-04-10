@@ -24,7 +24,6 @@ public class LoginController {
 
     @Autowired
     private JwtService jwtService;
-
     
     @Autowired
     private RefreshTokenService refreshTokenService;
@@ -39,23 +38,20 @@ public class LoginController {
         
         Empresa empresa = (Empresa) auth.getPrincipal();
         
-        // 1. Gera o JWT (Access Token) - Vida curta (ex: 2 horas)
         String token = jwtService.gerarToken(empresa);
-        
-        // 2. Gera o Refresh Token - Vida longa (ex: 7 dias) e salva no banco
         RefreshToken refreshToken = refreshTokenService.criarRefreshToken(empresa);
         
         return ResponseEntity.ok(new LoginResponseDTO(
                 token, 
-                refreshToken.getToken(), // NOVO: Agora incluímos o Refresh Token na resposta
+                refreshToken.getToken(),
                 empresa.getId(), 
                 empresa.getRazaoSocial(), 
                 empresa.getCnpj(), 
-                empresa.getEmail()
+                empresa.getEmail(),
+                empresa.getRole().name() // Agora visível
         ));
     }
 
-    // Endpoint para renovar o Access Token usando o Refresh Token
     @PostMapping("/refresh")
     public ResponseEntity<?> refreshToken(@RequestBody Map<String, String> request) {
         String tokenDeRenovacao = request.get("refreshToken");
@@ -64,7 +60,6 @@ public class LoginController {
                 .map(refreshTokenService::validarExpiracao)
                 .map(RefreshToken::getEmpresa)
                 .map(empresa -> {
-                    // Gera um novo Access Token (JWT)
                     String novoAccessToken = jwtService.gerarToken(empresa);
                     return ResponseEntity.ok(Map.of(
                             "token", novoAccessToken,

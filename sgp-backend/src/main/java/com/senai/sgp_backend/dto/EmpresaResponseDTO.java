@@ -8,9 +8,9 @@ public record EmpresaResponseDTO(
     String cnpj,
     String email,
     String telefone,
-    String nomeResponsavel
+    String nomeResponsavel,
+    String role // ADICIONADO PARA O FILTRO FUNCIONAR
 ) {
-    // Método utilitário para conversão da Entidade em DTO
     public static EmpresaResponseDTO fromEntity(Empresa empresa) {
         return new EmpresaResponseDTO(
             empresa.getId(),
@@ -18,7 +18,9 @@ public record EmpresaResponseDTO(
             empresa.getCnpj(),
             empresa.getEmail(),
             empresa.getTelefone(),
-            empresa.getNomeResponsavel()
+            empresa.getNomeResponsavel(),
+            // MAPEADO: Envia o papel da empresa para o Frontend
+            empresa.getRole() != null ? empresa.getRole().name() : "USER"
         );
     }
 }

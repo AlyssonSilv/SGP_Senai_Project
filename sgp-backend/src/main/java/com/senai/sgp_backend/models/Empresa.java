@@ -9,7 +9,6 @@ import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-
 import java.util.Collection;
 import java.util.List;
 
@@ -17,7 +16,16 @@ import java.util.List;
 @Table(name = "empresas")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor
+@Builder
 public class Empresa implements UserDetails {
+
+    public enum EmpresaRole {
+        ADMIN("admin"),
+        USER("user");
+        private String role;
+        EmpresaRole(String role) { this.role = role; }
+        public String getRole() { return role; }
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -45,39 +53,26 @@ public class Empresa implements UserDetails {
     private String telefone;
     private String nomeResponsavel;
 
-    // Métodos do UserDetails para integração com Spring Security
+    @Enumerated(EnumType.STRING)
+    private EmpresaRole role;
+
+    // Método seguro para evitar erro de null
+    public EmpresaRole getRole() {
+        return role == null ? EmpresaRole.USER : role;
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
+        if (this.getRole() == EmpresaRole.ADMIN) {
+            return List.of(new SimpleGrantedAuthority("ROLE_ADMIN"), new SimpleGrantedAuthority("ROLE_USER"));
+        }
         return List.of(new SimpleGrantedAuthority("ROLE_USER"));
     }
 
-    @Override
-    public String getPassword() {
-        return senha;
-    }
-
-    @Override
-    public String getUsername() {
-        return cnpj;
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
+    @Override public String getPassword() { return senha; }
+    @Override public String getUsername() { return cnpj; }
+    @Override public boolean isAccountNonExpired() { return true; }
+    @Override public boolean isAccountNonLocked() { return true; }
+    @Override public boolean isCredentialsNonExpired() { return true; }
+    @Override public boolean isEnabled() { return true; }
 }

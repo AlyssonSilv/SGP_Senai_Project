@@ -63,4 +63,19 @@ public class SolicitacaoService {
         stats.put("agendadas", solicitacaoRepository.countByEmpresaIdAndStatus(empresaId, "Agendada"));
         return stats;
     }
+
+    @Transactional // Garante que a alteração seja salva corretamente no banco
+    public void atualizarStatus(Long id, String novoStatus) {
+        // 1. Busca a solicitação pelo ID ou lança um erro se não existir
+        Solicitacao solicitacao = solicitacaoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Solicitação não encontrada com o ID: " + id));
+
+        // 2. Atualiza o campo status
+        solicitacao.setStatus(novoStatus);
+
+        // 3. Salva a alteração (Opcional se usar @Transactional, mas boa prática)
+        solicitacaoRepository.save(solicitacao);
+
+        System.out.println("Status da solicitação " + id + " alterado para: " + novoStatus);
+    }
 }

@@ -22,12 +22,18 @@ public class SolicitacaoController {
         return ResponseEntity.ok(solicitacaoService.criarSolicitacao(solicitacao));
     }
 
-    @GetMapping
-    public ResponseEntity<List<SolicitacaoResponseDTO>> listarTodas() {
+    // LISTAGEM PARA ADMIN (Com ou sem filtro)
+    @GetMapping("/admin/todas")
+    public ResponseEntity<List<SolicitacaoResponseDTO>> listarParaAdmin(
+            @RequestParam(required = false) Long empresaId) {
+        if (empresaId != null) {
+            // Filtra por empresa se o ID for passado
+            return ResponseEntity.ok(solicitacaoService.listarPorEmpresa(empresaId));
+        }
+        // Caso contrário, lista tudo do sistema
         return ResponseEntity.ok(solicitacaoService.listarTodas());
     }
 
-    // CORREÇÃO: Endpoint que estava faltando e causando erro no frontend
     @GetMapping("/empresa/{empresaId}")
     public ResponseEntity<List<SolicitacaoResponseDTO>> listarPorEmpresa(@PathVariable Long empresaId) {
         return ResponseEntity.ok(solicitacaoService.listarPorEmpresa(empresaId));
@@ -36,5 +42,15 @@ public class SolicitacaoController {
     @GetMapping("/stats/empresa/{empresaId}")
     public ResponseEntity<java.util.Map<String, Long>> obterEstatisticas(@PathVariable Long empresaId) {
         return ResponseEntity.ok(solicitacaoService.getEstatisticas(empresaId));
+    }
+
+    @PutMapping("/{id}/status")
+    public ResponseEntity<Void> atualizarStatus(
+            @PathVariable Long id,
+            @RequestBody java.util.Map<String, String> body) {
+
+        String novoStatus = body.get("status");
+        solicitacaoService.atualizarStatus(id, novoStatus); // Você precisará criar este método no Service
+        return ResponseEntity.ok().build();
     }
 }

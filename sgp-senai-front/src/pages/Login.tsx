@@ -18,7 +18,8 @@ const Login: React.FC = () => {
 
     try {
       const response = await api.post('/login', { cnpj: cnpjLimpo, senha });
-      const { token, refreshToken, id, razaoSocial, email } = response.data;
+      
+      const { token, refreshToken, id, razaoSocial, email, role } = response.data;
 
       localStorage.setItem('token', token);
       localStorage.setItem('refreshToken', refreshToken);
@@ -27,14 +28,20 @@ const Login: React.FC = () => {
         id,
         razaoSocial,
         cnpj: cnpjLimpo,
-        email
+        email,
+        role 
       }));
 
-      navigate('/dashboard');
+      // LÓGICA DE REDIRECIONAMENTO POR PAPEL (ROLE)
+      if (role === 'ADMIN') {
+        navigate('/admin/analitico');
+      } else {
+        navigate('/dashboard');
+      }
+
     } catch (error: any) {
       console.error("Erro no login:", error);
 
-      // CORREÇÃO: Tratamento de erros aprimorado
       if (error.response) {
         const status = error.response.status;
         if (status === 401) {

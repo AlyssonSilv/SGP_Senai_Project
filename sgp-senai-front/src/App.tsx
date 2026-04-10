@@ -2,22 +2,21 @@ import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
 import Sidebar from './components/Sidebar';
+import Analitico from './pages/Analitico';
 import Login from './pages/Login';
 import Cadastro from './pages/Cadastro';
 import Dashboard from './pages/Dashboard';
 import NovaSolicitacao from './pages/NovaSolicitacao';
 import ListaSolicitacoes from './pages/ListaSolicitacoes';
 import DetalheSolicitacao from './pages/DetalheSolicitacao';
-import Usuarios from './pages/Usuarios';
 import ProtectedRoute from './components/ProtectedRoute';
-
+import GestaoDemandas from './pages/GestaoDemandas';
+import Industrias from './pages/Industrias';
 import './index.css';
 
 function App() {
-  // Estado para controlar se o tema escuro está ativo
   const [isDarkMode, setIsDarkMode] = useState(false);
 
-  // Esse efeito coloca ou tira o atributo 'data-theme' da raiz do HTML
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.setAttribute('data-theme', 'dark');
@@ -32,15 +31,11 @@ function App() {
         <Sidebar />
 
         <main className="main">
-          {/* Barra Superior com o botão de Tema */}
+          {/* Barra Superior */}
           <div className="top">
             <div className="bar">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div className="title">SENAI • Solicitação de Treinamentos</div>
-              </div>
-
+              <div className="title">SENAI • Solicitação de Treinamentos</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                {/* Botão de Tema Claro/Escuro */}
                 <button
                   onClick={() => setIsDarkMode(!isDarkMode)}
                   className="btn ghost"
@@ -48,7 +43,7 @@ function App() {
                 >
                   {isDarkMode ? '☀️ Claro' : '🌙 Escuro'}
                 </button>
-                <div className="user">Usuário em Teste</div>
+                <div className="user">Painel de Controle</div>
               </div>
             </div>
             <div className="accent"></div>
@@ -56,36 +51,22 @@ function App() {
 
           <div className="wrap">
             <Routes>
+              {/* --- ROTAS PÚBLICAS --- */}
               <Route path="/login" element={<Login />} />
               <Route path="/cadastro" element={<Cadastro />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/nova" element={<NovaSolicitacao />} />
-              <Route path="/lista" element={<ListaSolicitacoes />} />
-              <Route path="/usuarios" element={<Usuarios />} />
-
-              {/* ROTA NOVA: O ":id" avisa ao React que essa parte da URL é variável */}
-              <Route path="/detalhe/:id" element={<DetalheSolicitacao />} />
-
               <Route path="/" element={<Navigate to="/login" />} />
 
+              {/* --- ROTAS DE EMPRESA (USER) --- */}
+              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/nova" element={<ProtectedRoute><NovaSolicitacao /></ProtectedRoute>} />
+              <Route path="/lista" element={<ProtectedRoute><ListaSolicitacoes /></ProtectedRoute>} />
+              <Route path="/detalhe/:id" element={<ProtectedRoute><DetalheSolicitacao /></ProtectedRoute>} />
 
-              <Route path="/dashboard" element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              } />
-
-              <Route path="/lista" element={
-                <ProtectedRoute>
-                  <ListaSolicitacoes />
-                </ProtectedRoute>
-              } />
-
-              <Route path="/nova" element={
-                <ProtectedRoute>
-                  <NovaSolicitacao />
-                </ProtectedRoute>
-              } />
+              {/* --- ROTAS DE ADMINISTRADOR (SENAI) --- */}
+              <Route path="/admin/analitico" element={<ProtectedRoute><Analitico /></ProtectedRoute>} />
+              {/* Mudamos aqui para evitar o conflito com a lista da empresa */}
+              <Route path="/admin/lista" element={<ProtectedRoute><GestaoDemandas /></ProtectedRoute>} />
+              <Route path="/admin/industrias" element={<ProtectedRoute><Industrias /></ProtectedRoute>} />
             </Routes>
           </div>
         </main>

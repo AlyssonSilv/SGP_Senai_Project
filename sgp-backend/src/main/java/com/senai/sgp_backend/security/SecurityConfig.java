@@ -27,7 +27,6 @@ public class SecurityConfig {
     @Autowired
     private SecurityFilter securityFilter;
 
-    //Injeção do novo filtro de Rate Limiting
     @Autowired
     private RateLimitingFilter rateLimitingFilter;
 
@@ -45,9 +44,12 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/empresas").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/empresas/**").permitAll()
+                        
+                        // Proteção da área Administrativa
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        
                         .anyRequest().authenticated()
                 )
-                //Adicionando o Rate Limiting como o primeiro filtro da cadeia
                 .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
@@ -66,12 +68,10 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        
         configuration.setAllowedOrigins(allowedOrigins);
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
-
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
