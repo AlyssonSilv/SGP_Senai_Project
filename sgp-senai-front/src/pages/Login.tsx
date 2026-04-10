@@ -14,15 +14,19 @@ const Login: React.FC = () => {
     setErro('');
     setLoading(true);
 
-    // MELHORIA: Limpar o CNPJ antes de enviar para a API (apenas números)
     const cnpjLimpo = cnpj.replace(/\D/g, '');
 
     try {
+      // Chamada para a API que agora retorna token e refreshToken
       const response = await api.post('/login', { cnpj: cnpjLimpo, senha });
-      const { token, id, razaoSocial, email } = response.data;
+      
+      // REFATORADO: Extraindo o refreshToken do corpo da resposta
+      const { token, refreshToken, id, razaoSocial, email } = response.data;
 
+      // Armazenamento para persistência e uso pelos interceptors
       localStorage.setItem('token', token);
-      // Salva o CNPJ limpo também no storage para consistência
+      localStorage.setItem('refreshToken', refreshToken); //Salva o token de renovação
+      
       localStorage.setItem('empresa_logada', JSON.stringify({
         id,
         razaoSocial,
@@ -32,11 +36,20 @@ const Login: React.FC = () => {
 
       navigate('/dashboard');
     } catch (error: any) {
-      // MELHORIA: Tratamento de erro mais específico
-      if (error.response && error.response.status === 401) {
-        setErro("CNPJ ou senha incorretos.");
+      console.error("Erro no login:", error);
+
+      // REFATORADO: Tratamento de erros baseado nos status que configuramos no backend
+      if (error.response) {
+        if (error.response.status === 401) {
+          setErro("CNPJ ou senha incorretos.");
+        } else if (error.response.status === 429) {
+          // Captura a mensagem do RateLimitingFilter (bloqueio por excesso de tentativas)
+          setErro(error.response.data || "Muitas tentativas seguidas. Aguarde um momento.");
+        } else {
+          setErro("Ocorreu um erro inesperado no servidor.");
+        }
       } else {
-        setErro("Erro ao conectar com o servidor. Tente novamente mais tarde.");
+        setErro("Não foi possível conectar ao servidor. Verifique sua internet.");
       }
     } finally {
       setLoading(false);
@@ -49,7 +62,7 @@ const Login: React.FC = () => {
       justifyContent: 'center',
       alignItems: 'center',
       minHeight: '100vh',
-      backgroundColor: 'var(--bg-color, #121212)' // Fallback para tema escuro
+      backgroundColor: 'var(--bg-color, #121212)'
     }}>
       <div className="card pad" style={{ width: '100%', maxWidth: '400px' }}>
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
@@ -59,7 +72,6 @@ const Login: React.FC = () => {
           </p>
         </div>
 
-        {/* Mensagem de Erro Condicional */}
         {erro && (
           <div style={{
             backgroundColor: 'rgba(255, 68, 68, 0.1)',

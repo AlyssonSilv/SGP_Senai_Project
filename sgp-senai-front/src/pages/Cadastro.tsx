@@ -37,7 +37,6 @@ const Cadastro: React.FC = () => {
         telefone: formData.telefone
       };
 
-      // CORREÇÃO: Removido o '/api' redundante, pois já está na baseURL do services/api.ts
       await api.post('/empresas', payload);
       
       alert('Cadastro realizado com sucesso!');
@@ -46,12 +45,18 @@ const Cadastro: React.FC = () => {
     } catch (error: any) {
       console.error("Erro ao cadastrar empresa:", error);
       
-      if (error.response?.status === 403) {
+      // REFATORADO: Tratamento específico para o erro de conflito (CNPJ duplicado)
+      if (error.response?.status === 409) {
+        // Exibe a mensagem personalizada vinda do backend
+        alert(error.response.data); 
+      } else if (error.response?.status === 403) {
         alert('Erro 403: O Spring Security bloqueou a requisição.');
       } else if (error.response?.status === 400) {
-        alert('Erro 400: Dados inválidos ou CNPJ/E-mail já cadastrado.');
+        // Erros de validação (MethodArgumentNotValidException)
+        alert('Erro 400: Dados inválidos. Verifique os campos preenchidos.');
       } else {
-        alert('Não foi possível conectar ao servidor.');
+        // Erros genéricos (500) ou queda de conexão
+        alert('Ocorreu um erro inesperado no servidor. Tente novamente mais tarde.');
       }
     }
   };
