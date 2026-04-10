@@ -7,7 +7,7 @@ import lombok.Data;
 
 @Entity
 @Table(name = "usuarios")
-@Data
+@Data // Gera Getters, Setters, toString, equals e hashCode automaticamente
 public class Usuario {
 
     @Id
@@ -25,8 +25,8 @@ public class Usuario {
 
     private String telefone;
 
-    // CORREÇÃO: Adicionando campos necessários para a lógica de serviço
     @NotBlank(message = "O cargo é obrigatório")
+    @Column(nullable = false)
     private String cargo;
 
     @NotBlank(message = "A senha é obrigatória")
