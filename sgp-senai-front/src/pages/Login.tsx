@@ -4,7 +4,7 @@ import api from '../services/api';
 
 const Login: React.FC = () => {
   const [cnpj, setCnpj] = useState('');
-  const [senha, setSenha] = useState('');
+  const [nomeResponsavel, setNomeResponsavel] = useState(''); // Alterado para refletir o nome do usuário
   const [erro, setErro] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -17,7 +17,11 @@ const Login: React.FC = () => {
     const cnpjLimpo = cnpj.replace(/\D/g, '');
 
     try {
-      const response = await api.post('/login', { cnpj: cnpjLimpo, senha });
+      // Enviamos 'nomeResponsavel' conforme a nova regra de negócio do Backend
+      const response = await api.post('/login', { 
+        cnpj: cnpjLimpo, 
+        nomeResponsavel: nomeResponsavel 
+      });
       
       const { token, refreshToken, id, razaoSocial, email, role } = response.data;
 
@@ -26,13 +30,13 @@ const Login: React.FC = () => {
       
       localStorage.setItem('empresa_logada', JSON.stringify({
         id,
-        razaoSocial,
+        razaoSocial, // Mantemos a Razão Social no storage para exibição no Dashboard
         cnpj: cnpjLimpo,
         email,
         role 
       }));
 
-      // LÓGICA DE REDIRECIONAMENTO POR PAPEL (ROLE)
+      // Redirecionamento baseado no papel do usuário
       if (role === 'ADMIN') {
         navigate('/admin/analitico');
       } else {
@@ -41,20 +45,10 @@ const Login: React.FC = () => {
 
     } catch (error: any) {
       console.error("Erro no login:", error);
-
-      if (error.response) {
-        const status = error.response.status;
-        if (status === 401) {
-          setErro("CNPJ ou senha incorretos.");
-        } else if (status === 429) {
-          setErro(error.response.data || "Muitas tentativas seguidas. Aguarde um momento.");
-        } else if (status === 500) {
-          setErro("O servidor falhou ao processar o acesso. Verifique os logs do backend.");
-        } else {
-          setErro("Ocorreu um erro inesperado (Status: " + status + ").");
-        }
+      if (error.response && error.response.status === 401) {
+        setErro("CNPJ ou Nome do Responsável incorretos. Verifique os dados do cadastro.");
       } else {
-        setErro("Não foi possível conectar ao servidor. Verifique sua internet.");
+        setErro("Não foi possível conectar ao servidor. Tente novamente mais tarde.");
       }
     } finally {
       setLoading(false);
@@ -71,9 +65,9 @@ const Login: React.FC = () => {
     }}>
       <div className="card pad" style={{ width: '100%', maxWidth: '400px' }}>
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-          <h2 style={{ margin: 0, color: 'var(--text-color, #fff)' }}>Acesso Empresarial</h2>
+          <h2 style={{ margin: 0, color: 'var(--text-color, #fff)' }}>Acesso ao Portal</h2>
           <p style={{ color: 'var(--text-muted, #aaa)', marginTop: '8px' }}>
-            SENAI • Solicitação de Treinamentos
+            SENAI • Gestão de Demandas
           </p>
         </div>
 
@@ -101,7 +95,7 @@ const Login: React.FC = () => {
               className="input"
               value={cnpj}
               onChange={(e) => setCnpj(e.target.value)}
-              placeholder="Ex: 00.000.000/0000-00"
+              placeholder="00.000.000/0000-00"
               required
               style={{ width: '100%', padding: '10px' }}
             />
@@ -109,14 +103,14 @@ const Login: React.FC = () => {
 
           <div style={{ marginBottom: '24px' }}>
             <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px' }}>
-              Senha
+              Nome do Responsável
             </label>
             <input
-              type="password"
+              type="text"
               className="input"
-              value={senha}
-              onChange={(e) => setSenha(e.target.value)}
-              placeholder="Digite sua senha"
+              value={nomeResponsavel}
+              onChange={(e) => setNomeResponsavel(e.target.value)}
+              placeholder="Digite seu nome completo"
               required
               style={{ width: '100%', padding: '10px' }}
             />
@@ -128,13 +122,13 @@ const Login: React.FC = () => {
             style={{ width: '100%', padding: '12px' }}
             disabled={loading}
           >
-            {loading ? 'Autenticando...' : 'Entrar no Sistema'}
+            {loading ? 'Validando...' : 'Acessar Painel'}
           </button>
         </form>
 
         <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '14px' }}>
           <Link to="/cadastro" style={{ color: '#007bff', textDecoration: 'none' }}>
-            Primeiro acesso? Cadastre sua empresa
+            Não possui cadastro? Cadastre sua empresa
           </Link>
         </div>
       </div>

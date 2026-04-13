@@ -52,6 +52,7 @@ public class Empresa implements UserDetails {
 
     private String telefone;
     private String nomeResponsavel;
+    private String logoUrl;
 
     @Enumerated(EnumType.STRING)
     private EmpresaRole role;

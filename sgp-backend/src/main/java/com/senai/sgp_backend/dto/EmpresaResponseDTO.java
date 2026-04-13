@@ -9,7 +9,8 @@ public record EmpresaResponseDTO(
     String email,
     String telefone,
     String nomeResponsavel,
-    String role // ADICIONADO PARA O FILTRO FUNCIONAR
+    String role,
+    String logoUrl // 1. Adicionado o campo no record
 ) {
     public static EmpresaResponseDTO fromEntity(Empresa empresa) {
         return new EmpresaResponseDTO(
@@ -20,7 +21,8 @@ public record EmpresaResponseDTO(
             empresa.getTelefone(),
             empresa.getNomeResponsavel(),
             // MAPEADO: Envia o papel da empresa para o Frontend
-            empresa.getRole() != null ? empresa.getRole().name() : "USER"
+            empresa.getRole() != null ? empresa.getRole().name() : "USER",
+            empresa.getLogoUrl() // 2. Mapeado o novo campo aqui
         );
     }
 }
