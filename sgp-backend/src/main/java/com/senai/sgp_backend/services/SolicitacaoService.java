@@ -19,7 +19,7 @@ public class SolicitacaoService {
     @Transactional
     public SolicitacaoResponseDTO criarSolicitacao(Solicitacao solicitacao) {
         if (solicitacao.getProtocolo() == null || solicitacao.getProtocolo().isEmpty()) {
-            solicitacao.setProtocolo("REQ-" + System.currentTimeMillis());
+            solicitacao.setProtocolo("CTE-" + System.currentTimeMillis());
         }
 
         solicitacao.setStatus("Nova");

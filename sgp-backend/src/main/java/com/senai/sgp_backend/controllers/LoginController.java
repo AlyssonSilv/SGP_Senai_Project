@@ -20,7 +20,7 @@ import java.util.Map;
 public class LoginController {
 
     @Autowired
-    private EmpresaRepository empresaRepository; // Necessário para a busca manual
+    private EmpresaRepository empresaRepository;
 
     @Autowired
     private JwtService jwtService;
