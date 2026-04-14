@@ -16,7 +16,6 @@ const GestaoDemandas: React.FC = () => {
 
     const alterarStatus = async (id: number, novoStatus: string) => {
         try {
-            // Endpoint que vamos criar no backend logo abaixo
             await api.put(`/solicitacoes/${id}/status`, { status: novoStatus });
             alert("Status atualizado com sucesso!");
             carregarTudo(); // Recarrega a lista

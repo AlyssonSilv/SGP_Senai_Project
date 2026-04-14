@@ -75,7 +75,7 @@ const Cadastro: React.FC = () => {
             <input 
               id="nomeEmpresa"
               className="input" 
-              placeholder="Nome da sua empresa"
+              placeholder="Nome da empresa"
               required 
               value={formData.nomeEmpresa} 
               onChange={e => setFormData({...formData, nomeEmpresa: e.target.value})} 
@@ -87,7 +87,7 @@ const Cadastro: React.FC = () => {
             <input 
               id="nomeResponsavel"
               className="input" 
-              placeholder="Nome do gestor ou dono"
+              placeholder="Nome do gestor"
               required 
               value={formData.nomeResponsavel} 
               onChange={e => setFormData({...formData, nomeResponsavel: e.target.value})} 

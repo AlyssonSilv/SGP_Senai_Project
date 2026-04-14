@@ -2,6 +2,7 @@ package com.senai.sgp_backend.security;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.senai.sgp_backend.models.Empresa;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,8 @@ public class JwtService {
         return JWT.create()
                 .withIssuer("sgp-senai")
                 .withSubject(empresa.getCnpj())
+                //Injeção da Role dentro do payload do Token
+                .withClaim("role", empresa.getRole().name())
                 .withExpiresAt(gerarDataExpiracao())
                 .sign(algoritmo);
     }
@@ -33,6 +36,19 @@ public class JwtService {
                     .getSubject();
         } catch (Exception e) {
             return "";
+        }
+    }
+
+    //Devolve o Token completo decodificado para ler a Role no Filtro
+    public DecodedJWT validarEDecodificarToken(String token) {
+        try {
+            Algorithm algoritmo = Algorithm.HMAC256(secret);
+            return JWT.require(algoritmo)
+                    .withIssuer("sgp-senai")
+                    .build()
+                    .verify(token);
+        } catch (Exception e) {
+            return null;
         }
     }
 

@@ -18,22 +18,22 @@ const Login: React.FC = () => {
 
     try {
       // Enviamos 'nomeResponsavel' conforme a nova regra de negócio do Backend
-      const response = await api.post('/login', { 
-        cnpj: cnpjLimpo, 
-        nomeResponsavel: nomeResponsavel 
+      const response = await api.post('/login', {
+        cnpj: cnpjLimpo,
+        nomeResponsavel: nomeResponsavel
       });
-      
+
       const { token, refreshToken, id, razaoSocial, email, role } = response.data;
 
       localStorage.setItem('token', token);
       localStorage.setItem('refreshToken', refreshToken);
-      
+
       localStorage.setItem('empresa_logada', JSON.stringify({
         id,
         razaoSocial, // Mantemos a Razão Social no storage para exibição no Dashboard
         cnpj: cnpjLimpo,
         email,
-        role 
+        role
       }));
 
       // Redirecionamento baseado no papel do usuário
@@ -61,13 +61,14 @@ const Login: React.FC = () => {
       justifyContent: 'center',
       alignItems: 'center',
       minHeight: '100vh',
-      backgroundColor: 'var(--bg-color, #121212)'
+      backgroundColor: 'var(--bg-color)'
     }}>
-      <div className="card pad" style={{ width: '100%', maxWidth: '400px' }}>
+      <div className="card pad" style={{ width: '100%', maxWidth: '400px', backgroundColor: '#fff' }}>
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-          <h2 style={{ margin: 0, color: 'var(--text-color, #fff)' }}>Acesso ao Portal</h2>
-          <p style={{ color: 'var(--text-muted, #aaa)', marginTop: '8px' }}>
-            SENAI • Gestão de Demandas
+          <h2 style={{ margin: 0, color: '#333' }}>Acesso ao Portal</h2>
+
+          <p style={{ color: '#666', marginTop: '8px' }}>
+            SENAI • Solicitação de Treinamentos Industriais
           </p>
         </div>
 

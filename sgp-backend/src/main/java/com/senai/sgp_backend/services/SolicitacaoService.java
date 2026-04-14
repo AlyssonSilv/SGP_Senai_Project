@@ -37,8 +37,7 @@ public class SolicitacaoService {
         Solicitacao salva = solicitacaoRepository.save(solicitacao);
         return SolicitacaoResponseDTO.fromEntity(salva);
     }
-
-    // MÉTODO QUE ESTAVA FALTANDO:
+    
     @Transactional(readOnly = true)
     public List<SolicitacaoResponseDTO> listarTodas() {
         return solicitacaoRepository.findAll().stream()
