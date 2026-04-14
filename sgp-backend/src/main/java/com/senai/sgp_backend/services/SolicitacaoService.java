@@ -73,7 +73,7 @@ public class SolicitacaoService {
         // 2. Atualiza o campo status
         solicitacao.setStatus(novoStatus);
 
-        // 3. Salva a alteração (Opcional se usar @Transactional, mas boa prática)
+        // 3. Salva a alteração 
         solicitacaoRepository.save(solicitacao);
 
         System.out.println("Status da solicitação " + id + " alterado para: " + novoStatus);

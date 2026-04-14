@@ -53,7 +53,7 @@ public class LoginController {
 
     @PostMapping("/refresh")
     public ResponseEntity<?> refreshToken(@RequestBody Map<String, String> request) {
-        // Mantido original para garantir renovação de sessão
+
         String tokenDeRenovacao = request.get("refreshToken");
 
         return refreshTokenRepository.findByToken(tokenDeRenovacao)

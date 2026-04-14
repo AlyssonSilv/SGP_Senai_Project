@@ -9,7 +9,7 @@ const Analitico: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [lastUpdate, setLastUpdate] = useState<string>('');
 
-    // Dentro da função carregarDadosIniciais no seu Analitico.tsx:
+    // Dentro da função carregarDadosIniciais  Analitico.tsx:
 
     const carregarDadosIniciais = async () => {
         try {
@@ -20,8 +20,8 @@ const Analitico: React.FC = () => {
 
             setStats(resStats.data);
 
-            // FILTRO APRIMORADO: Remove o Admin da lista de seleção
-            // Importante: .role deve estar em maiúsculas conforme o Enum do Java
+            // Remove o Admin da lista de seleção
+            //.role deve estar em maiúsculas conforme o Enum do Java
             const industriasApenas = resEmpresas.data.filter((e: any) => e.role === 'USER');
             setEmpresas(industriasApenas);
 

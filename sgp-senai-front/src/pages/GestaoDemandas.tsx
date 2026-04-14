@@ -37,7 +37,7 @@ const GestaoDemandas: React.FC = () => {
                             <th>Protocolo</th>
                             <th>Indústria</th>
                             <th>Treinamento</th>
-                            <th>Data</th>
+                            <th>Data Sugerida</th>
                             <th>Status Atual</th>
                             <th>Ações</th>
                         </tr>
