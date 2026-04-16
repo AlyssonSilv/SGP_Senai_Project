@@ -4,7 +4,7 @@ import api from '../services/api';
 
 const Login: React.FC = () => {
   const [cnpj, setCnpj] = useState('');
-  const [nomeResponsavel, setNomeResponsavel] = useState(''); // Alterado para refletir o nome do usuário
+  const [nomeResponsavel, setNomeResponsavel] = useState(''); 
   const [erro, setErro] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -17,7 +17,6 @@ const Login: React.FC = () => {
     const cnpjLimpo = cnpj.replace(/\D/g, '');
 
     try {
-      // Enviamos 'nomeResponsavel' conforme a nova regra de negócio do Backend
       const response = await api.post('/login', {
         cnpj: cnpjLimpo,
         nomeResponsavel: nomeResponsavel
@@ -30,7 +29,7 @@ const Login: React.FC = () => {
 
       localStorage.setItem('empresa_logada', JSON.stringify({
         id,
-        razaoSocial, // Mantemos a Razão Social no storage para exibição no Dashboard
+        razaoSocial, 
         cnpj: cnpjLimpo,
         email,
         role
