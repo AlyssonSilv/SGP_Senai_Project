@@ -24,3 +24,6 @@ public class RefreshToken {
     @JoinColumn(name = "empresa_id", referencedColumnName = "id")
     private Empresa empresa;
 }
+
+
+
