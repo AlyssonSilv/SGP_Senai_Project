@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/solicitacoes")
@@ -27,10 +28,8 @@ public class SolicitacaoController {
     public ResponseEntity<List<SolicitacaoResponseDTO>> listarParaAdmin(
             @RequestParam(required = false) Long empresaId) {
         if (empresaId != null) {
-            // Filtra por empresa se o ID for passado
             return ResponseEntity.ok(solicitacaoService.listarPorEmpresa(empresaId));
         }
-        // Caso contrário, lista tudo do sistema
         return ResponseEntity.ok(solicitacaoService.listarTodas());
     }
 
@@ -40,17 +39,46 @@ public class SolicitacaoController {
     }
 
     @GetMapping("/stats/empresa/{empresaId}")
-    public ResponseEntity<java.util.Map<String, Long>> obterEstatisticas(@PathVariable Long empresaId) {
+    public ResponseEntity<Map<String, Long>> obterEstatisticas(@PathVariable Long empresaId) {
         return ResponseEntity.ok(solicitacaoService.getEstatisticas(empresaId));
     }
 
+    // MÉTODO CORRIGIDO
     @PutMapping("/{id}/status")
     public ResponseEntity<Void> atualizarStatus(
             @PathVariable Long id,
-            @RequestBody java.util.Map<String, String> body) {
+            @RequestBody Map<String, String> body) {
 
         String novoStatus = body.get("status");
-        solicitacaoService.atualizarStatus(id, novoStatus); // Você precisará criar este método no Service
+        String instrutor = body.get("instrutor");
+        String sala = body.get("sala");
+        String horario = body.get("horario");
+
+        // Repassa todos os dados para o Service
+        solicitacaoService.atualizarStatus(id, novoStatus, instrutor, sala, horario);
+
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/{id}/editar")
+    public ResponseEntity<Void> editarAgendamento(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body) {
+
+        String status = body.get("status");
+        String instrutor = body.get("instrutor");
+        String sala = body.get("sala");
+        String horario = body.get("horario");
+
+        // Trata a conversão da data enviada pelo React
+        String dataStr = body.get("dataSugerida");
+        java.time.LocalDate dataSugerida = null;
+        if (dataStr != null && !dataStr.trim().isEmpty()) {
+            dataSugerida = java.time.LocalDate.parse(dataStr);
+        }
+
+        solicitacaoService.editarAgendamento(id, status, instrutor, sala, horario, dataSugerida);
+
         return ResponseEntity.ok().build();
     }
 }

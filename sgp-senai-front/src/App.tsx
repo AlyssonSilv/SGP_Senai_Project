@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from "react-hot-toast";
+
+<Toaster position="top-right" />
 
 import Sidebar from './components/Sidebar';
 import Analitico from './pages/Analitico';

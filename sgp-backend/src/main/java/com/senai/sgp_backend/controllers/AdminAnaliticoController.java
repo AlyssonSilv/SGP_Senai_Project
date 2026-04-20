@@ -1,37 +1,47 @@
 package com.senai.sgp_backend.controllers;
 
-import com.senai.sgp_backend.repositories.SolicitacaoRepository;
-import com.senai.sgp_backend.repositories.EmpresaRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.senai.sgp_backend.services.SolicitacaoService;
+import com.senai.sgp_backend.services.PdfService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.Map;
-import java.util.HashMap;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 @RestController
 @RequestMapping("/api/admin/analitico")
 public class AdminAnaliticoController {
 
-    @Autowired
-    private SolicitacaoRepository solicitacaoRepository;
+    private final SolicitacaoService solicitacaoService;
+    private final PdfService pdfService;
 
-    @Autowired
-    private EmpresaRepository empresaRepository;
+    public AdminAnaliticoController(SolicitacaoService solicitacaoService, PdfService pdfService) {
+        this.solicitacaoService = solicitacaoService;
+        this.pdfService = pdfService;
+    }
 
-    @GetMapping("/resumo")
-    public ResponseEntity<?> obterResumoGeral() {
-        Map<String, Object> stats = new HashMap<>();
-        
-        // Dados de volume global
-        stats.put("totalEmpresas", empresaRepository.count());
-        stats.put("totalSolicitacoes", solicitacaoRepository.count());
-        
-        // Distribuição por Status
-        stats.put("novas", solicitacaoRepository.countByStatus("Nova"));
-        stats.put("agendadas", solicitacaoRepository.countByStatus("Agendada"));
-        stats.put("concluidas", solicitacaoRepository.countByStatus("Concluída"));
-        stats.put("canceladas", solicitacaoRepository.countByStatus("Cancelada"));
+    @PutMapping("/solicitacoes/{id}/confirmar")
+    public ResponseEntity<?> confirmarAgendamento(@PathVariable Long id) {
+        try {
+            solicitacaoService.confirmarSolicitacao(id);
+            return ResponseEntity.ok().body("Agendamento confirmado com sucesso.");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 
-        return ResponseEntity.ok(stats);
+    @GetMapping("/agenda/pdf")
+    public void gerarPdfAgenda(HttpServletResponse response) throws IOException {
+
+        LocalDate amanha = LocalDate.now().plusDays(1);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        String fileName = "AGENDA CTA-SENAI " + amanha.format(formatter) + ".pdf";
+
+        response.setContentType("application/pdf");
+
+        response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+
+        pdfService.exportarAgendaConfirmada(response.getOutputStream());
     }
 }

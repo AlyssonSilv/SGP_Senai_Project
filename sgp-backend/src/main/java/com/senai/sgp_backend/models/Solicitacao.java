@@ -34,6 +34,12 @@ public class Solicitacao {
     @Column(nullable = false)
     private String status; // Ex: "Nova", "Agendada", "Em Triagem"
 
+    // --- NOVOS CAMPOS PARA A AGENDA DO CTA ---
+    private String instrutor;
+    private String sala;
+    private String horario;
+    // -----------------------------------------
+
     // Relacionamento: A solicitação pertence a uma Empresa (FAT)
     @ManyToOne
     @JoinColumn(name = "empresa_id", nullable = false)

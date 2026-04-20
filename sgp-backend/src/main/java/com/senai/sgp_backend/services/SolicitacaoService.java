@@ -6,6 +6,8 @@ import com.senai.sgp_backend.repositories.SolicitacaoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,7 +39,7 @@ public class SolicitacaoService {
         Solicitacao salva = solicitacaoRepository.save(solicitacao);
         return SolicitacaoResponseDTO.fromEntity(salva);
     }
-    
+
     @Transactional(readOnly = true)
     public List<SolicitacaoResponseDTO> listarTodas() {
         return solicitacaoRepository.findAll().stream()
@@ -64,7 +66,7 @@ public class SolicitacaoService {
     }
 
     @Transactional // Garante que a alteração seja salva corretamente no banco
-    public void atualizarStatus(Long id, String novoStatus) {
+    public void atualizarStatus(Long id, String novoStatus, String instrutor, String sala, String horario) {
         // 1. Busca a solicitação pelo ID ou lança um erro se não existir
         Solicitacao solicitacao = solicitacaoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Solicitação não encontrada com o ID: " + id));
@@ -72,9 +74,51 @@ public class SolicitacaoService {
         // 2. Atualiza o campo status
         solicitacao.setStatus(novoStatus);
 
-        // 3. Salva a alteração 
+        // 3. Se o status for aprovado pelo CTA-SENAI, salva os dados físicos
+        if ("CONFIRMADO".equals(novoStatus)) {
+            solicitacao.setInstrutor(instrutor);
+            solicitacao.setSala(sala);
+            solicitacao.setHorario(horario);
+        }
+
+        // 4. Salva a alteração
         solicitacaoRepository.save(solicitacao);
 
         System.out.println("Status da solicitação " + id + " alterado para: " + novoStatus);
+    }
+
+    public void confirmarSolicitacao(Long id) throws Exception {
+        Solicitacao solicitacao = solicitacaoRepository.findById(id)
+                .orElseThrow(() -> new Exception("Solicitação não encontrada"));
+
+        boolean dataOcupada = solicitacaoRepository.existsByDataSugeridaAndStatus(solicitacao.getDataSugerida(),
+                "CONFIRMADO");
+
+        if (dataOcupada) {
+            throw new Exception("A data sugerida já possui um agendamento confirmado na agenda.");
+        }
+
+        solicitacao.setStatus("CONFIRMADO");
+        solicitacaoRepository.save(solicitacao);
+    }
+
+    @Transactional
+    public void editarAgendamento(Long id, String status, String instrutor, String sala, String horario,
+            LocalDate dataSugerida) {
+        Solicitacao solicitacao = solicitacaoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Solicitação não encontrada com o ID: " + id));
+
+        if (status != null)
+            solicitacao.setStatus(status);
+        if (instrutor != null)
+            solicitacao.setInstrutor(instrutor);
+        if (sala != null)
+            solicitacao.setSala(sala);
+        if (horario != null)
+            solicitacao.setHorario(horario);
+        if (dataSugerida != null)
+            solicitacao.setDataSugerida(dataSugerida);
+
+        solicitacaoRepository.save(solicitacao);
     }
 }

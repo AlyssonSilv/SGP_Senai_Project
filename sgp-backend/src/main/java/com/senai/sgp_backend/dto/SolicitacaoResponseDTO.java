@@ -8,10 +8,13 @@ public record SolicitacaoResponseDTO(
     String protocolo,
     String treinamento,
     Integer quantidadeParticipantes,
-    String listaParticipantes, // ADICIONADO: Necessário para o modal de nomes
+    String listaParticipantes, 
     LocalDate dataSugerida,
     String status,
-    String nomeEmpresa
+    String nomeEmpresa,
+    String instrutor, // NOVO
+    String sala,      // NOVO
+    String horario    // NOVO
 ) {
     public static SolicitacaoResponseDTO fromEntity(Solicitacao s) {
         return new SolicitacaoResponseDTO(
@@ -19,10 +22,13 @@ public record SolicitacaoResponseDTO(
             s.getProtocolo(),
             s.getTreinamento(),
             s.getQuantidadeParticipantes(),
-            s.getListaParticipantes(), // REFATORADO: Agora envia os nomes para o Front
+            s.getListaParticipantes(),
             s.getDataSugerida(),
             s.getStatus(),
-            s.getEmpresa() != null ? s.getEmpresa().getRazaoSocial() : "Empresa não identificada"
+            s.getEmpresa() != null ? s.getEmpresa().getRazaoSocial() : "Empresa não identificada",
+            s.getInstrutor(), // Mapeia o instrutor da entity para o DTO
+            s.getSala(),      // Mapeia a sala da entity para o DTO
+            s.getHorario()    // Mapeia o horário da entity para o DTO
         );
     }
 }
