@@ -65,7 +65,7 @@ const Analitico: React.FC = () => {
         setIsEditing(false);
     };
 
-    // Função unificada para Confirmar (primeira vez) ou Salvar Edição
+    // Função unificada para Confirmar  ou Salvar Edição
     const handleSalvar = async (id: number) => {
         if (!dadosAdmin.instrutor || !dadosAdmin.sala || !dadosAdmin.horario || !dadosAdmin.dataSugerida) {
             alert("Por favor, preencha todos os campos (Data, Instrutor, Sala e Horário).");
@@ -78,7 +78,7 @@ const Analitico: React.FC = () => {
                 instrutor: dadosAdmin.instrutor,
                 sala: dadosAdmin.sala,
                 horario: dadosAdmin.horario,
-                dataSugerida: dadosAdmin.dataSugerida // Envia a nova data (ou a mesma se não foi alterada)
+                dataSugerida: dadosAdmin.dataSugerida
             });
             alert("Agendamento guardado com sucesso!");
             fecharModal();
