@@ -14,7 +14,7 @@ public class Solicitacao {
     private Long id;
 
     @Column(unique = true)
-    private String protocolo; // O famoso "CTE-2026..."
+    private String protocolo;
 
     @Column(nullable = false)
     private String treinamento;
