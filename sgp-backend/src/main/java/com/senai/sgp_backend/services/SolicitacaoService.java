@@ -26,7 +26,8 @@ public class SolicitacaoService {
 
         solicitacao.setStatus("Nova");
 
-        // Lógica para contagem exata de participantes baseada na lista de nomes
+        // Lógica para contagem exata de participantes baseada na lista de nomes ao
+        // criar
         if (solicitacao.getListaParticipantes() != null) {
             int totalReal = (int) Arrays.stream(solicitacao.getListaParticipantes().split("\\R"))
                     .filter(nome -> !nome.trim().isEmpty())
@@ -102,23 +103,32 @@ public class SolicitacaoService {
         solicitacaoRepository.save(solicitacao);
     }
 
-    @Transactional
+    // ATUALIZADO: Recebe também a quantidadeParticipantes enviada pelo Controller
     public void editarAgendamento(Long id, String status, String instrutor, String sala, String horario,
-            LocalDate dataSugerida) {
-        Solicitacao solicitacao = solicitacaoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Solicitação não encontrada com o ID: " + id));
+            LocalDate dataSugerida, String listaParticipantes, Integer quantidadeParticipantes) {
 
-        if (status != null)
-            solicitacao.setStatus(status);
-        if (instrutor != null)
-            solicitacao.setInstrutor(instrutor);
-        if (sala != null)
-            solicitacao.setSala(sala);
-        if (horario != null)
-            solicitacao.setHorario(horario);
-        if (dataSugerida != null)
-            solicitacao.setDataSugerida(dataSugerida);
+        Solicitacao solicitacao = solicitacaoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Solicitação não encontrada"));
+
+        solicitacao.setStatus(status);
+        solicitacao.setInstrutor(instrutor);
+        solicitacao.setSala(sala);
+        solicitacao.setHorario(horario);
+        solicitacao.setDataSugerida(dataSugerida);
+
+        if (listaParticipantes != null) {
+            solicitacao.setListaParticipantes(listaParticipantes);
+            // Salva a quantidade enviada pelo React
+            solicitacao.setQuantidadeParticipantes(quantidadeParticipantes != null ? quantidadeParticipantes : 0);
+        }
 
         solicitacaoRepository.save(solicitacao);
+    }
+
+    public SolicitacaoResponseDTO buscarPorId(Long id) {
+        Solicitacao solicitacao = solicitacaoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Solicitação não encontrada"));
+
+        return SolicitacaoResponseDTO.fromEntity(solicitacao);
     }
 }

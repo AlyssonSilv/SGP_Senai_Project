@@ -471,3 +471,28 @@ td:last-child {
 [data-theme="dark"] .rail small {
     color: #94a3b8;
 }
+
+/* Estilos para os campos de formulário */
+.form-label {
+  display: block;
+  font-size: 12px;
+  font-weight: bold;
+  color: var(--muted, #6b7280);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid var(--line, #e5e7eb);
+  outline: none;
+  background-color: #ffffff;
+  transition: border-color 0.2s;
+}
+
+.form-input:focus {
+  border-color: #004a8e; /* Cor do SENAI ao focar no campo */
+  box-shadow: 0 0 0 1px rgba(0, 74, 142, 0.1);
+}

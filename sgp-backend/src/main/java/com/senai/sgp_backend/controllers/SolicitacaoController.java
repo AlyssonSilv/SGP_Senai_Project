@@ -23,6 +23,12 @@ public class SolicitacaoController {
         return ResponseEntity.ok(solicitacaoService.criarSolicitacao(solicitacao));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<SolicitacaoResponseDTO> buscarPorId(@PathVariable Long id) {
+        return ResponseEntity.ok(solicitacaoService.buscarPorId(id));
+    }
+    // ----------------------------------
+
     // LISTAGEM PARA ADMIN (Com ou sem filtro)
     @GetMapping("/admin/todas")
     public ResponseEntity<List<SolicitacaoResponseDTO>> listarParaAdmin(
@@ -43,7 +49,6 @@ public class SolicitacaoController {
         return ResponseEntity.ok(solicitacaoService.getEstatisticas(empresaId));
     }
 
-    // MÉTODO CORRIGIDO
     @PutMapping("/{id}/status")
     public ResponseEntity<Void> atualizarStatus(
             @PathVariable Long id,
@@ -70,14 +75,22 @@ public class SolicitacaoController {
         String sala = body.get("sala");
         String horario = body.get("horario");
 
-        // Trata a conversão da data enviada pelo React
+        
+        String listaParticipantes = body.get("listaParticipantes");
+        
+        
+        Integer quantidadeParticipantes = body.get("quantidadeParticipantes") != null 
+                ? Integer.parseInt(body.get("quantidadeParticipantes").toString()) 
+                : 0;
+
         String dataStr = body.get("dataSugerida");
         java.time.LocalDate dataSugerida = null;
         if (dataStr != null && !dataStr.trim().isEmpty()) {
             dataSugerida = java.time.LocalDate.parse(dataStr);
         }
 
-        solicitacaoService.editarAgendamento(id, status, instrutor, sala, horario, dataSugerida);
+        
+        solicitacaoService.editarAgendamento(id, status, instrutor, sala, horario, dataSugerida, listaParticipantes, quantidadeParticipantes);
 
         return ResponseEntity.ok().build();
     }

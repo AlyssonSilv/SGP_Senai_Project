@@ -28,6 +28,28 @@ public class PdfService {
             // 1. Busca os dados
             List<Solicitacao> confirmadas = solicitacaoRepository.findByStatus("CONFIRMADO");
 
+            // Ordenação: Treinamentos normais primeiro (por data), "Outros" sempre no final
+            confirmadas.sort((s1, s2) -> {
+                boolean isOutros1 = s1.getTreinamento() != null && s1.getTreinamento().equalsIgnoreCase("Outros");
+                boolean isOutros2 = s2.getTreinamento() != null && s2.getTreinamento().equalsIgnoreCase("Outros");
+
+                // Se o s1 for "Outros" e o s2 não for, joga o s1 pro final (+1)
+                if (isOutros1 && !isOutros2)
+                    return 1;
+
+                // Se o s2 for "Outros" e o s1 não for, joga o s2 pro final (+1 na visão do s2)
+                if (!isOutros1 && isOutros2)
+                    return -1;
+
+                // Se ambos forem "Outros" OU ambos forem normais, ordena por Data Sugerida
+                // (para ficar em ordem cronológica)
+                if (s1.getDataSugerida() != null && s2.getDataSugerida() != null) {
+                    return s1.getDataSugerida().compareTo(s2.getDataSugerida());
+                }
+
+                return 0;
+            });
+
             System.out.println("========================================");
             System.out.println("GERANDO PDF - Iniciando processo...");
             System.out.println("Solicitações encontradas no BD: " + confirmadas.size());

@@ -2,8 +2,6 @@ import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from "react-hot-toast";
 
-<Toaster position="top-right" />
-
 import Sidebar from './components/Sidebar';
 import Analitico from './pages/Analitico';
 import Login from './pages/Login';
@@ -30,6 +28,9 @@ function App() {
 
   return (
     <BrowserRouter>
+      {/* O Toaster precisa estar dentro do render principal */}
+      <Toaster position="top-right" />
+      
       <div className="app">
         <Sidebar />
 
@@ -67,9 +68,10 @@ function App() {
 
               {/* --- ROTAS DE ADMINISTRADOR (SENAI) --- */}
               <Route path="/admin/analitico" element={<ProtectedRoute><Analitico /></ProtectedRoute>} />
-              {/* Mudamos aqui para evitar o conflito com a lista da empresa */}
               <Route path="/admin/lista" element={<ProtectedRoute><GestaoDemandas /></ProtectedRoute>} />
               <Route path="/admin/industrias" element={<ProtectedRoute><Industrias /></ProtectedRoute>} />
+              {/* Nova Rota Adicionada para o clique do "Ver Detalhes" no Analítico */}
+              <Route path="/admin/solicitacao/:id" element={<ProtectedRoute><DetalheSolicitacao /></ProtectedRoute>} />
             </Routes>
           </div>
         </main>
@@ -78,4 +80,4 @@ function App() {
   );
 }
 
-export default App;
+export default App; 
