@@ -18,7 +18,7 @@ interface Solicitacao {
 
 const Analitico: React.FC = () => {
     const [solicitacoes, setSolicitacoes] = useState<Solicitacao[]>([]);
-    const navigate = useNavigate(); // Hook para navegação
+    const navigate = useNavigate();
 
     const carregarSolicitacoes = async () => {
         try {
@@ -48,7 +48,7 @@ const Analitico: React.FC = () => {
         }
     };
 
-    // A função de navegação substitui a abertura do modal
+
     const irParaDetalhes = (id: number) => {
         navigate(`/admin/solicitacao/${id}`);
     };
