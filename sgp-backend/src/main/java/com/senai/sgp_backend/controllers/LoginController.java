@@ -4,7 +4,7 @@ import com.senai.sgp_backend.dto.LoginRequestDTO;
 import com.senai.sgp_backend.dto.LoginResponseDTO;
 import com.senai.sgp_backend.models.Empresa;
 import com.senai.sgp_backend.models.RefreshToken;
-import com.senai.sgp_backend.repositories.EmpresaRepository; // Injetado agora
+import com.senai.sgp_backend.repositories.EmpresaRepository;
 import com.senai.sgp_backend.repositories.RefreshTokenRepository;
 import com.senai.sgp_backend.security.JwtService;
 import com.senai.sgp_backend.services.RefreshTokenService;

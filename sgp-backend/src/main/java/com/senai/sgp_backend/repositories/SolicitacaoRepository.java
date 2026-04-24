@@ -32,4 +32,9 @@ public interface SolicitacaoRepository extends JpaRepository<Solicitacao, Long> 
 
     // Verifica se já existe uma solicitação aprovada na mesma data
     boolean existsByDataSugeridaAndStatus(LocalDate dataSugerida, String status);
+
+    // --- NOVO MÉTODO ADICIONADO ---
+    // Busca treinamentos por status e data específica (usado para gerar a agenda do
+    // dia seguinte)
+    List<Solicitacao> findByStatusAndDataSugerida(String status, LocalDate dataSugerida);
 }

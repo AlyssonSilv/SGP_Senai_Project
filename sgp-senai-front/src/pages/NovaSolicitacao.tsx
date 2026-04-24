@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import api from '../services/api'; // Importamos a nossa ponte com o Java
+import api from '../services/api';
+import toast from 'react-hot-toast';
 
 const NovaSolicitacao: React.FC = () => {
   const navigate = useNavigate();
@@ -12,28 +13,47 @@ const NovaSolicitacao: React.FC = () => {
     treinamentoOutros: ''
   });
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Trava Visual (Baseada no navegador - Ajuda na UX, mas a verdadeira segurança está no Java)
+  const horaAtual = new Date().getHours();
+  const minutoAtual = new Date().getMinutes();
+  const passouDoHorarioVisual = horaAtual > 16 || (horaAtual === 16 && minutoAtual >= 30);
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // 1. Validação simples
+    if (isSubmitting) return;
+
     if (!formData.listaParticipantes.trim()) {
-      alert('Insira os nomes dos colaboradores.');
+      toast.error('Insira os nomes dos colaboradores.');
       return;
     }
 
+    const nomesListados = formData.listaParticipantes
+      .split('\n')
+      .filter(nome => nome.trim() !== '')
+      .length;
+
+    if (nomesListados !== formData.quantidade) {
+      toast.error(
+        `Divergência detectada:\nVocê informou ${formData.quantidade} participante(s), mas listou ${nomesListados} nome(s). Por favor, corrija a lista ou a quantidade.`
+      );
+      return;
+    }
+
+    setIsSubmitting(true);
+
     try {
-      // 2. Recuperamos a empresa logada do localStorage
       const empresaStorage = localStorage.getItem('empresa_logada');
       if (!empresaStorage) {
-        alert("Sessão expirada. Por favor, faça login novamente.");
+        toast.error("Sessão expirada. Por favor, faça login novamente.");
         navigate('/login');
         return;
       }
 
       const empresa = JSON.parse(empresaStorage);
 
-      // 3. Montamos o payload para o Java
-      // Note que 'quantidade' vira 'quantidadeParticipantes' para bater com a Entity
       const payload = {
         treinamento: formData.treinamento,
         treinamentoOutros: formData.treinamentoOutros,
@@ -41,36 +61,53 @@ const NovaSolicitacao: React.FC = () => {
         listaParticipantes: formData.listaParticipantes,
         dataSugerida: formData.dataSugerida,
         status: "Nova",
-        empresa: { id: empresa.id } // Aqui fazemos o vínculo relacional!
+        empresa: { id: empresa.id }
       };
 
-      // 4. Enviamos para o endpoint /api/solicitacoes
       await api.post('/solicitacoes', payload);
 
-      alert('Solicitação enviada com sucesso! O protocolo foi gerado pelo sistema.');
-      navigate('/lista'); // Redireciona para a tabela de solicitações
+      toast.success('Solicitação enviada com sucesso! O protocolo foi gerado pelo sistema.');
+      navigate('/lista');
 
-    } catch (error) {
-      console.error("Erro ao enviar solicitação:", error);
-      alert('Erro ao processar solicitação. Verifique se o servidor Java está ativo.');
+    } catch (error: any) {
+      setIsSubmitting(false);
+
+      // Se o Java bloquear por causa do horário, ele manda o status 403
+      if (error.response && error.response.status === 403) {
+        toast.error(error.response.data, { duration: 6000 }); // Exibe a mensagem que veio do Java
+      } else {
+        console.error("Erro ao enviar solicitação:", error);
+        toast.error('Erro ao processar solicitação. Verifique se o servidor Java está ativo.');
+      }
     }
   };
+
+  // Se o relógio local do usuário disser que passou das 16:30, o formulário é desabilitado
+  const formDesabilitado = isSubmitting || passouDoHorarioVisual;
 
   return (
     <section className="card pad" style={{ maxWidth: '980px' }}>
       <div className="h1">Nova Solicitação</div>
-      
-      <form onSubmit={handleSubmit} className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '14px', marginTop: '20px' }}>
-        
+
+      {/* Aviso amigável caso tenha passado do horário */}
+      {passouDoHorarioVisual && (
+        <div style={{ backgroundColor: '#fee2e2', color: '#991b1b', padding: '16px', borderRadius: '8px', marginTop: '16px', fontWeight: 'bold' }}>
+          ⚠️ Atenção: A agenda de hoje foi encerrada (limite às 16:30). O sistema não aceita novas solicitações neste horário. Por favor, retorne amanhã.
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '14px', marginTop: '20px', opacity: passouDoHorarioVisual ? 0.6 : 1 }}>
+
         <div>
           <label htmlFor="treinamento" className="label">Treinamento</label>
-          <select 
+          <select
             id="treinamento"
-            className="select" 
+            className="select"
             title="Selecione o treinamento desejado"
             required
             value={formData.treinamento}
-            onChange={e => setFormData({...formData, treinamento: e.target.value})}
+            onChange={e => setFormData({ ...formData, treinamento: e.target.value })}
+            disabled={formDesabilitado}
           >
             <option value="Operação de Empilhadeira">Operação de Empilhadeira</option>
             <option value="NR 20">NR 20</option>
@@ -81,62 +118,76 @@ const NovaSolicitacao: React.FC = () => {
 
         <div>
           <label htmlFor="quantidade" className="label">Quantidade de Participantes</label>
-          <input 
+          <input
             id="quantidade"
-            className="input" 
-            type="number" 
-            min="1" 
+            className="input"
+            type="number"
+            min="1"
             title="Informe a quantidade de alunos"
-            required 
+            required
             value={formData.quantidade}
-            onChange={e => setFormData({...formData, quantidade: parseInt(e.target.value)})}
+            onChange={e => setFormData({ ...formData, quantidade: parseInt(e.target.value) })}
+            disabled={formDesabilitado}
           />
         </div>
 
         <div style={{ gridColumn: 'span 2' }}>
           <label htmlFor="listaParticipantes" className="label">Lista de Participantes (nome por linha)</label>
-          <textarea 
+          <textarea
             id="listaParticipantes"
-            className="textarea" 
+            className="textarea"
             placeholder="Nome 1&#10;Nome 2&#10;Nome 3"
             title="Digite um nome por linha"
             required
             value={formData.listaParticipantes}
-            onChange={e => setFormData({...formData, listaParticipantes: e.target.value})}
+            onChange={e => setFormData({ ...formData, listaParticipantes: e.target.value })}
+            disabled={formDesabilitado}
           ></textarea>
         </div>
 
         <div>
           <label htmlFor="dataSugerida" className="label">Data sugerida</label>
-          <input 
+          <input
             id="dataSugerida"
-            className="input" 
-            type="date" 
+            className="input"
+            type="date"
             title="Selecione uma data sugerida"
-            required 
+            required
             value={formData.dataSugerida}
-            onChange={e => setFormData({...formData, dataSugerida: e.target.value})}
+            onChange={e => setFormData({ ...formData, dataSugerida: e.target.value })}
+            disabled={formDesabilitado}
           />
         </div>
 
         {formData.treinamento === 'Outros (especificar)' && (
           <div>
             <label htmlFor="treinamentoOutros" className="label">Outros (especificar)</label>
-            <input 
+            <input
               id="treinamentoOutros"
-              className="input" 
+              className="input"
               placeholder="Descreva o treinamento"
               title="Especifique o treinamento"
               required
               value={formData.treinamentoOutros}
-              onChange={e => setFormData({...formData, treinamentoOutros: e.target.value})}
+              onChange={e => setFormData({ ...formData, treinamentoOutros: e.target.value })}
+              disabled={formDesabilitado}
             />
           </div>
         )}
 
         <div style={{ gridColumn: 'span 2', marginTop: '10px' }} className="actions">
-          <Link to="/dashboard" className="btn secondary">Cancelar</Link>
-          <button className="btn primary" type="submit">Enviar Solicitação</button>
+          {!isSubmitting && (
+            <Link to="/dashboard" className="btn secondary">Cancelar</Link>
+          )}
+
+          <button
+            className="btn primary"
+            type="submit"
+            disabled={formDesabilitado}
+            style={{ opacity: formDesabilitado ? 0.7 : 1, cursor: formDesabilitado ? 'not-allowed' : 'pointer' }}
+          >
+            {isSubmitting ? 'Enviando...' : (passouDoHorarioVisual ? 'Agenda Encerrada' : 'Enviar Solicitação')}
+          </button>
         </div>
       </form>
     </section>
