@@ -21,8 +21,6 @@ public class SolicitacaoController {
     @Autowired
     private SolicitacaoService solicitacaoService;
 
-    // ATUALIZADO: Alterado para ResponseEntity<?> para poder retornar tanto o DTO
-    // (sucesso) quanto a String (erro)
     @PostMapping
     public ResponseEntity<?> criar(@RequestBody @Valid Solicitacao solicitacao) {
 
