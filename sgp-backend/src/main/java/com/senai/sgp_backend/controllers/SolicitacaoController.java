@@ -5,9 +5,12 @@ import com.senai.sgp_backend.models.Solicitacao;
 import com.senai.sgp_backend.services.SolicitacaoService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 
@@ -18,8 +21,26 @@ public class SolicitacaoController {
     @Autowired
     private SolicitacaoService solicitacaoService;
 
+    // ATUALIZADO: Alterado para ResponseEntity<?> para poder retornar tanto o DTO
+    // (sucesso) quanto a String (erro)
     @PostMapping
-    public ResponseEntity<SolicitacaoResponseDTO> criar(@RequestBody @Valid Solicitacao solicitacao) {
+    public ResponseEntity<?> criar(@RequestBody @Valid Solicitacao solicitacao) {
+
+        // 1. Pega a hora atual usando o fuso horário correto (Maranhão / Brasília)
+        ZoneId fusoHorario = ZoneId.of("America/Fortaleza");
+        LocalTime agora = LocalTime.now(fusoHorario);
+
+        // 2. Define o limite (16h30)
+        LocalTime limite = LocalTime.of(16, 30);
+
+        // 3. A Trava de Segurança Invencível do Backend
+        if (agora.isAfter(limite)) {
+            // Retorna um erro 403 (Proibido) com uma mensagem clara para o React capturar
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("A agenda do dia foi encerrada. O horário limite para envio de solicitações é até as 16:30. Por favor, retorne amanhã.");
+        }
+
+        // Se estiver dentro do horário permitido, cria a solicitação normalmente
         return ResponseEntity.ok(solicitacaoService.criarSolicitacao(solicitacao));
     }
 
@@ -75,12 +96,10 @@ public class SolicitacaoController {
         String sala = body.get("sala");
         String horario = body.get("horario");
 
-        
         String listaParticipantes = body.get("listaParticipantes");
-        
-        
-        Integer quantidadeParticipantes = body.get("quantidadeParticipantes") != null 
-                ? Integer.parseInt(body.get("quantidadeParticipantes").toString()) 
+
+        Integer quantidadeParticipantes = body.get("quantidadeParticipantes") != null
+                ? Integer.parseInt(body.get("quantidadeParticipantes").toString())
                 : 0;
 
         String dataStr = body.get("dataSugerida");
@@ -89,8 +108,8 @@ public class SolicitacaoController {
             dataSugerida = java.time.LocalDate.parse(dataStr);
         }
 
-        
-        solicitacaoService.editarAgendamento(id, status, instrutor, sala, horario, dataSugerida, listaParticipantes, quantidadeParticipantes);
+        solicitacaoService.editarAgendamento(id, status, instrutor, sala, horario, dataSugerida, listaParticipantes,
+                quantidadeParticipantes);
 
         return ResponseEntity.ok().build();
     }
