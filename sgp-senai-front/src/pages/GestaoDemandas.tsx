@@ -1,15 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
 
-
 const GestaoDemandas: React.FC = () => {
     const [solicitacoes, setSolicitacoes] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
+    // Estados de Paginação
+    const [pagina, setPagina] = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
+
     const carregarTudo = async () => {
         try {
-            const res = await api.get('/solicitacoes/admin/todas');
-            setSolicitacoes(res.data);
+            // Requisição atualizada com parâmetros de paginação
+            const res = await api.get(`/solicitacoes/admin/todas?page=${pagina}&size=10`);
+
+            // CORREÇÃO: Agora acessamos 'res.data.content' para a lista
+            setSolicitacoes(res.data.content);
+
+            // CORREÇÃO: Com o VIA_DTO, o totalPages agora mora dentro de 'res.data.page'
+            setTotalPages(res.data.page.totalPages);
+
             setLoading(false);
         } catch (err) { console.error(err); }
     };
@@ -18,11 +28,12 @@ const GestaoDemandas: React.FC = () => {
         try {
             await api.put(`/solicitacoes/${id}/status`, { status: novoStatus });
             alert("Status atualizado com sucesso!");
-            carregarTudo(); // Recarrega a lista
+            carregarTudo(); // Recarrega a lista para refletir a mudança
         } catch (err) { alert("Erro ao atualizar status."); }
     };
 
-    useEffect(() => { carregarTudo(); }, []);
+    // O useEffect agora reage quando a página muda
+    useEffect(() => { carregarTudo(); }, [pagina]);
 
     return (
         <div className="wrap">
@@ -42,7 +53,7 @@ const GestaoDemandas: React.FC = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {solicitacoes.map(sol => (
+                        {solicitacoes && solicitacoes.map(sol => (
                             <tr key={sol.id}>
                                 <td style={{ fontWeight: 'bold' }}>{sol.protocolo}</td>
                                 <td>{sol.nomeEmpresa}</td>
@@ -68,6 +79,27 @@ const GestaoDemandas: React.FC = () => {
                         ))}
                     </tbody>
                 </table>
+
+                {/* CONTROLES DE PAGINAÇÃO */}
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '20px', paddingBottom: '10px' }}>
+                    <button
+                        className="btn ghost sm"
+                        disabled={pagina === 0}
+                        onClick={() => setPagina(pagina - 1)}
+                    >
+                        Anterior
+                    </button>
+                    <span style={{ lineHeight: '32px' }}>
+                        Página {totalPages === 0 ? 0 : pagina + 1} de {totalPages}
+                    </span>
+                    <button
+                        className="btn ghost sm"
+                        disabled={pagina >= totalPages - 1 || totalPages === 0}
+                        onClick={() => setPagina(pagina + 1)}
+                    >
+                        Próxima
+                    </button>
+                </div>
             </div>
         </div>
     );

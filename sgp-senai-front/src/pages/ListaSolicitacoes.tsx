@@ -6,6 +6,10 @@ const ListaSolicitacoes: React.FC = () => {
   const [solicitacoes, setSolicitacoes] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Estados de Paginação
+  const [pagina, setPagina] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+
   // Estados para o Modal de Alunos
   const [modalAberto, setModalAberto] = useState(false);
   const [alunosSelecionados, setAlunosSelecionados] = useState("");
@@ -17,8 +21,13 @@ const ListaSolicitacoes: React.FC = () => {
         const empresaStorage = localStorage.getItem('empresa_logada');
         if (!empresaStorage) return;
         const empresa = JSON.parse(empresaStorage);
-        const response = await api.get(`/solicitacoes/empresa/${empresa.id}`);
-        setSolicitacoes(response.data);
+
+        // Requisição atualizada com parâmetros de paginação
+        const response = await api.get(`/solicitacoes/empresa/${empresa.id}?page=${pagina}&size=10`);
+
+        // Atualizado para ler o conteúdo paginado devolvido pelo Spring
+        setSolicitacoes(response.data.content);
+        setTotalPages(response.data.page.totalPages);
       } catch (error) {
         console.error("Erro ao carregar:", error);
       } finally {
@@ -26,7 +35,7 @@ const ListaSolicitacoes: React.FC = () => {
       }
     };
     buscarDados();
-  }, []);
+  }, [pagina]); // O useEffect agora reage quando a página muda
 
   const abrirDetalhes = (lista: string, protocolo: string) => {
     setAlunosSelecionados(lista);
@@ -67,7 +76,7 @@ const ListaSolicitacoes: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          {solicitacoes.map((req: any) => (
+          {solicitacoes && solicitacoes.map((req: any) => (
             <tr key={req.id}>
               <td><b>{req.protocolo}</b></td>
               <td>{req.treinamento}</td>
@@ -87,6 +96,25 @@ const ListaSolicitacoes: React.FC = () => {
           ))}
         </tbody>
       </table>
+
+      {/* CONTROLES DE PAGINAÇÃO */}
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '20px', paddingBottom: '20px' }}>
+        <button
+          className="btn ghost sm"
+          disabled={pagina === 0}
+          onClick={() => setPagina(pagina - 1)}
+        >
+          Anterior
+        </button>
+        <span style={{ lineHeight: '32px' }}>Página {totalPages === 0 ? 0 : pagina + 1} de {totalPages}</span>
+        <button
+          className="btn ghost sm"
+          disabled={pagina >= totalPages - 1 || totalPages === 0}
+          onClick={() => setPagina(pagina + 1)}
+        >
+          Próxima
+        </button>
+      </div>
 
       {/* MODAL SIMPLES PARA VER ALUNOS */}
       {modalAberto && (

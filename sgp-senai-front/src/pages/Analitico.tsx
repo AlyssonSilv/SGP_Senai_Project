@@ -18,20 +18,30 @@ interface Solicitacao {
 
 const Analitico: React.FC = () => {
     const [solicitacoes, setSolicitacoes] = useState<Solicitacao[]>([]);
+
+    // Estados de Paginação adicionados
+    const [pagina, setPagina] = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
+
     const navigate = useNavigate();
 
     const carregarSolicitacoes = async () => {
         try {
-            const response = await api.get('/solicitacoes/admin/todas');
-            setSolicitacoes(response.data);
+            // Requisita a página correta da API
+            const response = await api.get(`/solicitacoes/admin/todas?page=${pagina}&size=10`);
+
+            // CORREÇÃO: Lê o array de dentro da propriedade 'content'
+            setSolicitacoes(response.data.content);
+            setTotalPages(response.data.page.totalPages);
         } catch (error) {
             console.error("Erro ao carregar solicitações:", error);
         }
     };
 
+    // O useEffect agora reage à mudança da página
     useEffect(() => {
         carregarSolicitacoes();
-    }, []);
+    }, [pagina]);
 
     const handleGerarPdf = async () => {
         try {
@@ -47,7 +57,6 @@ const Analitico: React.FC = () => {
             alert("Erro ao gerar o ficheiro PDF.");
         }
     };
-
 
     const irParaDetalhes = (id: number) => {
         navigate(`/admin/solicitacao/${id}`);
@@ -75,7 +84,8 @@ const Analitico: React.FC = () => {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
-                        {solicitacoes.map(sol => (
+                        {/* Verificação de segurança (solicitacoes &&) antes do map */}
+                        {solicitacoes && solicitacoes.map(sol => (
                             <tr key={sol.id} className="hover:bg-blue-50/50 transition-colors">
                                 <td className="py-3 px-5 text-gray-800 font-medium">{sol.protocolo}</td>
                                 <td className="py-3 px-5 text-gray-700">{sol.nomeEmpresa}</td>
@@ -86,14 +96,13 @@ const Analitico: React.FC = () => {
                                     </span>
                                 </td>
                                 <td className="py-3 px-5 text-center">
-                                    {/* O clique agora navega para a página de detalhes usando a função irParaDetalhes */}
                                     <Button variant="ghost" onClick={() => irParaDetalhes(sol.id)}>
                                         Ver Detalhes
                                     </Button>
                                 </td>
                             </tr>
                         ))}
-                        {solicitacoes.length === 0 && (
+                        {(!solicitacoes || solicitacoes.length === 0) && (
                             <tr>
                                 <td colSpan={5} className="py-8 text-center text-gray-500">
                                     Nenhuma solicitação encontrada.
@@ -102,6 +111,27 @@ const Analitico: React.FC = () => {
                         )}
                     </tbody>
                 </table>
+
+                {/* Controles de Paginação */}
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '20px', paddingBottom: '20px' }}>
+                    <button
+                        className="btn ghost sm"
+                        disabled={pagina === 0}
+                        onClick={() => setPagina(pagina - 1)}
+                    >
+                        Anterior
+                    </button>
+                    <span style={{ lineHeight: '32px' }}>
+                        Página {totalPages === 0 ? 0 : pagina + 1} de {totalPages}
+                    </span>
+                    <button
+                        className="btn ghost sm"
+                        disabled={pagina >= totalPages - 1 || totalPages === 0}
+                        onClick={() => setPagina(pagina + 1)}
+                    >
+                        Próxima
+                    </button>
+                </div>
             </div>
         </div>
     );

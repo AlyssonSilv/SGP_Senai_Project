@@ -8,11 +8,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.senai.sgp_backend.models.Empresa;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 
 @RestController
 @RequestMapping("/api/solicitacoes")
@@ -21,6 +26,10 @@ public class SolicitacaoController {
     @Autowired
     private SolicitacaoService solicitacaoService;
 
+    private Empresa getEmpresaLogada() {
+        return (Empresa) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    }
+
     @PostMapping
     public ResponseEntity<?> criar(@RequestBody @Valid Solicitacao solicitacao) {
 
@@ -28,10 +37,10 @@ public class SolicitacaoController {
         ZoneId fusoHorario = ZoneId.of("America/Fortaleza");
         LocalTime agora = LocalTime.now(fusoHorario);
 
-        // 2. Define o limite (16h30)
-        LocalTime limite = LocalTime.of(16, 30);
+        // 2. Define o limite (16h00)
+        LocalTime limite = LocalTime.of(16, 00);
 
-        // 3. A Trava de Segurança Invencível do Backend
+        // 3.Trava de Segurança do  Backend
         if (agora.isAfter(limite)) {
             // Retorna um erro 403 (Proibido) com uma mensagem clara para o React capturar
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
@@ -42,25 +51,33 @@ public class SolicitacaoController {
         return ResponseEntity.ok(solicitacaoService.criarSolicitacao(solicitacao));
     }
 
+    // --- Repassa a empresa logada para prevenir IDOR ---
     @GetMapping("/{id}")
     public ResponseEntity<SolicitacaoResponseDTO> buscarPorId(@PathVariable Long id) {
-        return ResponseEntity.ok(solicitacaoService.buscarPorId(id));
+        Empresa empresaLogada = getEmpresaLogada();
+        return ResponseEntity.ok(solicitacaoService.buscarPorId(id, empresaLogada));
     }
     // ----------------------------------
 
     // LISTAGEM PARA ADMIN (Com ou sem filtro)
     @GetMapping("/admin/todas")
-    public ResponseEntity<List<SolicitacaoResponseDTO>> listarParaAdmin(
-            @RequestParam(required = false) Long empresaId) {
+    public ResponseEntity<Page<SolicitacaoResponseDTO>> listarParaAdmin(
+            @RequestParam(required = false) Long empresaId,
+            @PageableDefault(size = 10, page = 0, sort = "id") Pageable pageable) { // Define o padrão: página 0, 10
+                                                                                    
+
         if (empresaId != null) {
-            return ResponseEntity.ok(solicitacaoService.listarPorEmpresa(empresaId));
+            return ResponseEntity.ok(solicitacaoService.listarPorEmpresa(empresaId, pageable));
         }
-        return ResponseEntity.ok(solicitacaoService.listarTodas());
+        return ResponseEntity.ok(solicitacaoService.listarTodas(pageable));
     }
 
     @GetMapping("/empresa/{empresaId}")
-    public ResponseEntity<List<SolicitacaoResponseDTO>> listarPorEmpresa(@PathVariable Long empresaId) {
-        return ResponseEntity.ok(solicitacaoService.listarPorEmpresa(empresaId));
+    public ResponseEntity<Page<SolicitacaoResponseDTO>> listarPorEmpresa(
+            @PathVariable Long empresaId,
+            @PageableDefault(size = 10, page = 0, sort = "id") Pageable pageable) {
+
+        return ResponseEntity.ok(solicitacaoService.listarPorEmpresa(empresaId, pageable));
     }
 
     @GetMapping("/stats/empresa/{empresaId}")
@@ -84,10 +101,13 @@ public class SolicitacaoController {
         return ResponseEntity.ok().build();
     }
 
+    // --- ROTA ATUALIZADA: Repassa a empresa logada para prevenir IDOR ---
     @PutMapping("/{id}/editar")
     public ResponseEntity<Void> editarAgendamento(
             @PathVariable Long id,
             @RequestBody Map<String, String> body) {
+
+        Empresa empresaLogada = getEmpresaLogada(); // Captura empresa logada
 
         String status = body.get("status");
         String instrutor = body.get("instrutor");
@@ -106,8 +126,9 @@ public class SolicitacaoController {
             dataSugerida = java.time.LocalDate.parse(dataStr);
         }
 
+        // Repassa a empresaLogada no final
         solicitacaoService.editarAgendamento(id, status, instrutor, sala, horario, dataSugerida, listaParticipantes,
-                quantidadeParticipantes);
+                quantidadeParticipantes, empresaLogada);
 
         return ResponseEntity.ok().build();
     }

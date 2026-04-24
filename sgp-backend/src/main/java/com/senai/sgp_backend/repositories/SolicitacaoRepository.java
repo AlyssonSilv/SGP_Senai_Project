@@ -3,16 +3,24 @@ package com.senai.sgp_backend.repositories;
 import com.senai.sgp_backend.models.Solicitacao;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-
+import org.springframework.data.jpa.repository.EntityGraph;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Repository
 public interface SolicitacaoRepository extends JpaRepository<Solicitacao, Long> {
 
-    // Busca todas as solicitações de uma empresa específica
-    List<Solicitacao> findByEmpresaId(Long empresaId);
+    // Busca as solicitações de uma empresa específica (Este sim precisa do
+    // empresaId)
+    @EntityGraph(attributePaths = { "empresa" })
+    Page<Solicitacao> findByEmpresaId(Long empresaId, Pageable pageable);
+
+    // CORREÇÃO: Busca TUDO (Removemos o Long empresaId daqui)
+    @EntityGraph(attributePaths = { "empresa" })
+    Page<Solicitacao> findAll(Pageable pageable);
 
     // Busca uma solicitação específica pelo seu protocolo único
     Optional<Solicitacao> findByProtocolo(String protocolo);
