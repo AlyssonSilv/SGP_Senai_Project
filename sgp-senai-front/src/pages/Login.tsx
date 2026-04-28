@@ -4,7 +4,7 @@ import api from '../services/api';
 
 const Login: React.FC = () => {
   const [cnpj, setCnpj] = useState('');
-  const [nomeResponsavel, setNomeResponsavel] = useState(''); 
+  const [nomeResponsavel, setNomeResponsavel] = useState('');
   const [erro, setErro] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -22,20 +22,20 @@ const Login: React.FC = () => {
         nomeResponsavel: nomeResponsavel
       });
 
-      const { token, refreshToken, id, razaoSocial, email, role } = response.data;
+      // 1. Extraímos APENAS os dados do utilizador.
+      // O token e o refreshToken já estão guardados de forma invisível nos Cookies do navegador!
+      const { id, razaoSocial, email, role } = response.data;
 
-      localStorage.setItem('token', token);
-      localStorage.setItem('refreshToken', refreshToken);
-
+      // 2. Guardamos provisoriamente os dados visuais do utilizador no localStorage
       localStorage.setItem('empresa_logada', JSON.stringify({
         id,
-        razaoSocial, 
+        razaoSocial,
         cnpj: cnpjLimpo,
         email,
         role
       }));
 
-      // Redirecionamento baseado no papel do usuário
+      // Redirecionamento baseado no papel do utilizador
       if (role === 'ADMIN') {
         navigate('/admin/analitico');
       } else {
@@ -110,7 +110,7 @@ const Login: React.FC = () => {
               className="input"
               value={nomeResponsavel}
               onChange={(e) => setNomeResponsavel(e.target.value)}
-              placeholder="Digite seu nome completo"
+              placeholder="Digite o seu nome completo"
               required
               style={{ width: '100%', padding: '10px' }}
             />
@@ -128,7 +128,7 @@ const Login: React.FC = () => {
 
         <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '14px' }}>
           <Link to="/cadastro" style={{ color: '#007bff', textDecoration: 'none' }}>
-            Não possui cadastro? Cadastre sua empresa
+            Não possui cadastro? Cadastre a sua empresa
           </Link>
         </div>
       </div>

@@ -42,14 +42,17 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/login").permitAll()
+
+                        // ✨ ADICIONE ESTA LINHA:
+                        .requestMatchers(HttpMethod.POST, "/api/login/refresh").permitAll()
+
                         .requestMatchers(HttpMethod.POST, "/api/empresas").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/empresas/**").permitAll()
-                        
+
                         // Proteção da área Administrativa
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        
-                        .anyRequest().authenticated()
-                )
+
+                        .anyRequest().authenticated())
                 .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();

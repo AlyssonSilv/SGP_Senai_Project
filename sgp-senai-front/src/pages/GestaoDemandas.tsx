@@ -14,7 +14,7 @@ const GestaoDemandas: React.FC = () => {
             // Requisição atualizada com parâmetros de paginação
             const res = await api.get(`/solicitacoes/admin/todas?page=${pagina}&size=10`);
 
-            // CORREÇÃO: Agora acessamos 'res.data.content' para a lista
+            // CORREÇÃO: Agora acessa 'res.data.content' para a lista
             setSolicitacoes(res.data.content);
 
             // CORREÇÃO: Com o VIA_DTO, o totalPages agora mora dentro de 'res.data.page'
